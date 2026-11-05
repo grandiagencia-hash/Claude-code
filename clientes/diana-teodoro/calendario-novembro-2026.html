@@ -1,0 +1,365 @@
+<title>DT Finanças · Novembro 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cabeçalho com resumo do escopo → filtros → grade do mês (lista no celular) + painel de detalhe → pendências sem data. */
+:root{
+  --bg:#FAF9F7; --surface:#FFFFFF; --ink:#2A211C; --muted:#7D6F66; --line:#E7E0DA; --soft:#F2EDE8;
+  --accent:#6B4A35;
+  --c-feed:#6B4A35; --c-reel:#2F6F6A; --c-story:#A9772A; --c-prazo:#B04A37; --c-pag:#56606E;
+  --ok:#2E7D4F; --warn:#B7791F; --bad:#B23A3A; --idea:#7D6F66;
+  --f-display:"Bodoni Moda", "Didot", Georgia, serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1A1613; --surface:#221D19; --ink:#EEE6DF; --muted:#A8998E; --line:#3A322C; --soft:#2A241F;
+  --accent:#D3A783;
+  --c-feed:#C99A76; --c-reel:#6FB8B0; --c-story:#D9A951; --c-prazo:#E07B67; --c-pag:#9AA6B5;
+  --ok:#6CC08E; --warn:#E3AE55; --bad:#E77A7A; --idea:#A8998E; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#1A1613; --surface:#221D19; --ink:#EEE6DF; --muted:#A8998E; --line:#3A322C; --soft:#2A241F;
+  --accent:#D3A783;
+  --c-feed:#C99A76; --c-reel:#6FB8B0; --c-story:#D9A951; --c-prazo:#E07B67; --c-pag:#9AA6B5;
+  --ok:#6CC08E; --warn:#E3AE55; --bad:#E77A7A; --idea:#A8998E; color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+header{display:flex;flex-wrap:wrap;gap:18px 32px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:20px}
+.brand{display:flex;flex-direction:column;gap:6px;min-width:0}
+h1{font-family:var(--f-display);font-weight:500;font-size:clamp(30px,4.6vw,46px);line-height:1.05;color:var(--ink)}
+h1 em{font-style:italic;color:var(--accent)}
+.sub{color:var(--muted);max-width:60ch}
+.scope{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.scope div{padding:10px 16px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
+.scope div:first-child{border-left:0}
+.scope b{font-family:var(--f-mono);font-weight:500;font-size:20px;font-variant-numeric:tabular-nums}
+.scope span{font-size:12px;color:var(--muted)}
+.scope .over b{color:var(--bad)}
+
+.alerts{display:flex;flex-direction:column;gap:8px}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:8px;background:var(--soft);font-size:14px}
+.alert::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--warn)}
+.alert.bad::before{background:var(--bad)}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:inherit;font-size:13px;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip i{width:9px;height:9px;border-radius:2px;background:var(--c)}
+.chip[aria-pressed="false"]{color:var(--muted);background:transparent}
+.chip[aria-pressed="false"] i{background:transparent;outline:1.5px solid var(--c)}
+.chip:focus-visible,.ev:focus-visible,.li:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.legend{margin-left:auto;display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--s)}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+.cal{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.dow div{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line)}
+.day{min-height:118px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.day:nth-child(7n){border-right:0}
+.day.out{background:var(--soft);opacity:.55}
+.day .n{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;padding:0 2px;display:flex;justify-content:space-between}
+.day.today .n b{background:var(--accent);color:var(--surface);border-radius:4px;padding:0 5px;font-weight:500}
+.ev{font:inherit;text-align:left;width:100%;border:0;cursor:pointer;display:flex;gap:6px;align-items:flex-start;padding:4px 6px;border-radius:5px;background:color-mix(in srgb, var(--c) 13%, transparent);color:var(--ink);font-size:12px;line-height:1.3}
+.ev .bar{flex:none;width:3px;align-self:stretch;border-radius:2px;background:var(--c)}
+.ev .t{min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ev .dot{margin-top:4px;flex:none}
+.ev.sel{box-shadow:inset 0 0 0 1.5px var(--c)}
+.ev.deadline{background:transparent;border:1px dashed var(--c)}
+
+.panel{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 16px);border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel h2{font-family:var(--f-display);font-weight:500;font-size:22px;line-height:1.2}
+.panel .meta{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;padding:3px 8px;border-radius:4px;background:var(--soft);color:var(--ink);display:inline-flex;gap:6px;align-items:center}
+.tag.k{color:var(--surface);background:var(--c)}
+dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;font-size:14px}
+dt{color:var(--muted);font-size:12px;padding-top:2px}
+dd{margin:0;min-width:0}
+.note{border-left:2px solid var(--warn);padding:6px 10px;background:var(--soft);border-radius:0 6px 6px 0;font-size:13.5px}
+.note b{display:block;font-size:11px;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.empty{color:var(--muted);font-size:14px}
+
+.list{display:none;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.lday{display:grid;grid-template-columns:56px minmax(0,1fr);border-bottom:1px solid var(--line)}
+.lday:last-child{border-bottom:0}
+.lday .d{padding:10px 0 10px 12px;font-family:var(--f-mono);font-size:12px;color:var(--muted);line-height:1.2}
+.lday .d b{display:block;font-size:20px;color:var(--ink);font-weight:500}
+.lday .items{padding:8px 10px 8px 0;display:flex;flex-direction:column;gap:5px;min-width:0}
+.li{font:inherit;text-align:left;border:0;cursor:pointer;display:flex;gap:8px;align-items:flex-start;padding:7px 9px;border-radius:6px;background:color-mix(in srgb, var(--c) 12%, transparent);color:var(--ink);font-size:14px}
+.li .bar{flex:none;width:3px;align-self:stretch;border-radius:2px;background:var(--c)}
+.li .x{min-width:0;flex:1}
+.li small{display:block;color:var(--muted);font-size:12px}
+.li.deadline{background:transparent;border:1px dashed var(--c)}
+
+section.tray{display:flex;flex-direction:column;gap:12px}
+section.tray h3,section.notes h3{font-family:var(--f-display);font-weight:500;font-size:22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{font:inherit;text-align:left;color:var(--ink);cursor:pointer;border:1px dashed var(--line);border-radius:10px;background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card b{font-weight:600}
+.card small{color:var(--muted)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;border-top:1px solid var(--line);padding-top:20px}
+.notes div{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.notes strong{color:var(--ink);font-weight:600}
+
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}.panel{position:static}}
+@media (max-width:680px){.cal{display:none}.list{display:flex}.scope{grid-template-columns:repeat(2,minmax(0,1fr))}.scope div:nth-child(3){border-left:0}.scope div:nth-child(n+3){border-top:1px solid var(--line)}.legend{margin-left:0}}
+@media (prefers-reduced-motion:no-preference){.ev,.li,.chip{transition:background-color .15s, box-shadow .15s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="eyebrow">Grandi Agência · Calendário de conteúdo</span>
+      <h1>DT Finanças <em>· novembro 2026</em></h1>
+      <p class="sub">Planejamento do Instagram <span style="font-family:var(--f-mono);font-size:13px">@diana.dtfinancas</span>, com o status de aprovação de cada pauta conforme a planilha revisada pela Diana.</p>
+    </div>
+    <div class="scope" id="scope" aria-label="Entregas do plano"></div>
+  </header>
+
+  <div class="alerts" id="alerts"></div>
+
+  <div class="filters" role="group" aria-label="Filtrar por tipo">
+    <span id="chips" style="display:contents"></span>
+    <div class="legend" aria-label="Legenda de status">
+      <span><i class="dot" style="--s:var(--ok)"></i>Aprovado</span>
+      <span><i class="dot" style="--s:var(--warn)"></i>Em ajuste</span>
+      <span><i class="dot" style="--s:var(--bad)"></i>Tema novo, aguarda aprovação</span>
+      <span><i class="dot" style="--s:var(--idea)"></i>Sugestão</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div>
+      <div class="cal" id="cal">
+        <div class="dow"><div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div></div>
+        <div class="grid" id="grid"></div>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <section class="tray">
+    <h3>Sem data definida</h3>
+    <p class="sub" style="margin:0">Entram no calendário assim que a Diana confirmar a data de fundação da DT (prazo 09/11).</p>
+    <div class="cards" id="tray"></div>
+  </section>
+
+  <section class="notes">
+    <div><strong>Aprovação</strong>A Diana tem 2 dias úteis para aprovar cada peça, com até 2 rodadas de ajuste. O prazo de aprovação de cada post aparece no detalhe.</div>
+    <div><strong>Reels</strong>A Diana grava os vídeos seguindo o roteiro da agência; a Grandi edita e publica. O vídeo precisa chegar até o prazo marcado em vermelho.</div>
+    <div><strong>Datas comemorativas</strong>O calendário não usa feriados nem datas comemorativas, a pedido da Diana. A Black Friday aparece só como tema de gestão de caixa.</div>
+    <div><strong>Reunião mensal</strong>1 reunião de alinhamento online por mês. Ainda sem data; sugestão: semana de 23/11, para fechar as pautas de dezembro.</div>
+  </section>
+</div>
+
+<script>
+const TYPES = {
+  feed:  {label:"Feed",            c:"--c-feed"},
+  reel:  {label:"Reels",           c:"--c-reel"},
+  story: {label:"Stories",         c:"--c-story"},
+  prazo: {label:"Prazos da Diana", c:"--c-prazo"},
+  pag:   {label:"Pagamentos",      c:"--c-pag"}
+};
+const STATUS = {
+  ok:   {label:"Aprovado",                    s:"--ok"},
+  warn: {label:"Em ajuste",                   s:"--warn"},
+  bad:  {label:"Tema novo · aguarda aprovação", s:"--bad"},
+  idea: {label:"Sugestão da agência",         s:"--idea"}
+};
+
+/* Pautas: planilha "Temas instagram DT" (revisada pela Diana em 05/11). */
+const EVENTS = [
+  {id:"p1", d:6,  type:"feed", fmt:"Carrossel", status:"warn", pilar:"Autoridade",
+   title:"BPO financeiro e contabilidade: funções que se completam",
+   idea:"Contador, BPO e dono lado a lado: a contabilidade cuida das obrigações fiscais e é parceira; o BPO cuida da rotina e do caixa do dia a dia; o dono decide.",
+   cta:"Conte aqui se você sabia que BPO Financeiro e contabilidade têm funções diferentes, mas complementares.",
+   note:"Diana pediu para trocar o CTA e tirar a frase \"o contador olha o passado\", que soa como diminuir o contador (ela tem cliente de contabilidade). Texto acima já ajustado; falta a aprovação final."},
+  {id:"p2", d:9,  type:"feed", fmt:"Carrossel", status:"ok", pilar:"Autoridade",
+   title:"Terceirizar o financeiro é perder o controle?",
+   idea:"A objeção nº 1: o que o BPO executa (lançar, conciliar, agendar, relatar) e o que continua com o dono (aprovar pagamentos, decidir). Acessos e permissões explicados.",
+   cta:"Qual é o seu maior receio em terceirizar? Comente."},
+  {id:"p3", d:12, type:"reel", fmt:"Reel", status:"ok", pilar:"Educação",
+   title:"Vender mais na Black Friday não significa ter mais dinheiro no caixa",
+   idea:"Proposta da Diana: vendas no cartão e parceladas entram aos poucos, enquanto as contas vencem agora. Acompanhar recebimentos, taxas e fluxo de caixa.",
+   cta:"Me chama no direct com a palavra CAIXA.", video:"10/11"},
+  {id:"p4", d:14, type:"feed", fmt:"Carrossel (trend)", status:"ok", pilar:"Autoridade",
+   title:"Clareia pra mim, IA",
+   idea:"No formato da trend: dúvidas financeiras que o empresário pediria para a IA \"clarear\", e a resposta da Diana com o que a IA não enxerga no caso real da empresa.",
+   cta:"Qual dúvida você pediria pra clarear? Comente."},
+  {id:"p5", d:17, type:"feed", fmt:"Carrossel", status:"ok", pilar:"Identificação",
+   title:"Quanto custa não ter um financeiro organizado?",
+   idea:"O custo que não aparece na planilha: juros e multas por atraso, cobranças esquecidas, horas do dono no operacional e decisões tomadas sem dado.",
+   cta:"Quantas horas por semana você gasta no financeiro? Responda nos comentários."},
+  {id:"p6", d:19, type:"feed", fmt:"Carrossel", status:"ok", pilar:"Conversão",
+   title:"Conheça nossas soluções",
+   idea:"Rotina, organização e inteligência para o seu negócio: BPO Financeiro, Diagnóstico Raio-X Financeiro e Treinamentos financeiros.",
+   cta:"Fale comigo no WhatsApp."},
+  {id:"p7", d:21, type:"feed", fmt:"Carrossel", status:"bad", pilar:"Conversão",
+   title:"3 anos de DT: 2 vagas para o Diagnóstico Raio-X Financeiro",
+   idea:"Campanha do aniversário de 3 anos: duas vagas abertas para o Diagnóstico Raio-X Financeiro neste mês. O que o diagnóstico mostra e como garantir a vaga.",
+   cta:"A definir com a Diana (sugestão: \"Quer uma das 2 vagas? Me chama no WhatsApp\").",
+   note:"Substitui a pauta de split payment, que a Diana considerou assunto de contabilidade. Falta definir condições da campanha e o CTA."},
+  {id:"p8", d:25, type:"feed", fmt:"Carrossel", status:"warn", pilar:"Identificação",
+   title:"Pauta da Diana enviada no grupo (substitui \"Black Friday: estoque\")",
+   idea:"Registrar aqui a ideia que a Diana mandou no grupo de WhatsApp.",
+   cta:"A definir.",
+   note:"A pauta de estoque foi recusada: \"estoque não tem relação com BPO Financeiro\". Transcrever a ideia do grupo e reenviar para aprovação."},
+  {id:"p9", d:28, type:"feed", fmt:"Carrossel", status:"warn", pilar:"Conversão",
+   title:"O que o seu relatório financeiro mensal deveria te responder",
+   idea:"Cinco perguntas que o relatório gerencial responde: qual saldo ficou em conta; quanto foi pago e quanto foi recebido; quanto tem a pagar e a receber (fluxo de caixa); quais foram os maiores gastos; onde \"cortar\". Mostra na prática o que o cliente recebe com os relatórios da DT.",
+   cta:"Seu relatório responde a essas 5? Me chame no direct com RELATÓRIO.",
+   note:"Texto já atualizado com as cinco perguntas que a Diana escreveu. Reenviar para aprovação."},
+
+  /* Stories: 4 artes do plano. Sugestões da agência, ainda não apresentadas. */
+  {id:"s1", d:9,  type:"story", fmt:"Story · arte", status:"idea",
+   title:"Enquete: qual seu maior receio em terceirizar o financeiro?",
+   idea:"Arte com enquete de duas opções, levando para o carrossel do dia."},
+  {id:"s2", d:19, type:"story", fmt:"Story · arte", status:"idea",
+   title:"Nossas soluções com link para o WhatsApp",
+   idea:"Resumo dos 3 serviços com botão de link, reforçando o carrossel do dia."},
+  {id:"s3", d:21, type:"story", fmt:"Story · arte", status:"idea",
+   title:"3 anos: 2 vagas para o Diagnóstico Raio-X",
+   idea:"Arte de anúncio da campanha, com caixa de perguntas para quem quiser a vaga."},
+  {id:"s4", d:26, type:"story", fmt:"Story · arte", status:"idea",
+   title:"Lembrete: últimas vagas do Diagnóstico",
+   idea:"Arte de reforço da campanha antes do fim do mês."},
+
+  /* Prazos da Diana */
+  {id:"d1", d:6,  type:"prazo", deadline:true, title:"Aprovar ajuste do post de 06/11",
+   idea:"O post sai no mesmo dia. Sem aprovação até a manhã de 06/11, ele passa para a próxima data livre."},
+  {id:"d2", d:9,  type:"prazo", deadline:true, title:"Informar a data de fundação da DT",
+   idea:"Define a data do Reel e do carrossel de 3 anos."},
+  {id:"d3", d:10, type:"prazo", deadline:true, title:"Enviar vídeo do Reel de Black Friday",
+   idea:"Vídeo vertical 9:16 gravado pela Diana com o roteiro da agência. 2 dias úteis antes da publicação (12/11)."},
+  {id:"d4", d:12, type:"prazo", deadline:true, title:"Enviar materiais dos 3 anos",
+   idea:"3 a 5 fotos do começo; fotos de marcos e eventos (I ❤ BPO, livro, mentorias); lista dos marcos com ano; 1 foto profissional vertical para a capa; números autorizados; uma frase sobre os 3 anos; depoimento de cliente só com autorização por escrito; logo ou materiais antigos, se houver."},
+
+  /* Pagamentos (cláusula 11) */
+  {id:"f1", d:1,  type:"pag", deadline:true, title:"Parcela 1 · 40% · R$ 278,80", idea:"Vencimento todo dia 1º."},
+  {id:"f2", d:25, type:"pag", deadline:true, title:"Parcela 2 · 60% · R$ 418,20", idea:"Vencimento todo dia 25."}
+];
+
+const UNDATED = [
+  {id:"p10", type:"reel", fmt:"Reel", status:"warn", pilar:"Autoridade",
+   title:"3 anos de DT Finanças",
+   idea:"Diana em câmera contando, em 30 a 45 segundos, como começou, o que aprendeu e o que mudou para os clientes.",
+   cta:"Você fez parte dessa história? Conta aqui como conheceu a DT!",
+   note:"CTA já trocado pelo texto da Diana. Vídeo deve chegar 2 dias úteis antes da publicação."},
+  {id:"p11", type:"feed", fmt:"Carrossel", status:"ok", pilar:"Autoridade",
+   title:"O marco de 3 anos da DT Finanças",
+   idea:"Linha do tempo: o começo, os marcos (eventos de BPO, livro Código das Finanças, mentorias) e o que vem pela frente, com fotos reais.",
+   cta:"Obrigada por fazer parte. Conte há quanto tempo você nos acompanha."}
+];
+
+const PLAN = {feed:8, reel:2, story:4};
+const WD = ["dom","seg","ter","qua","qui","sex","sáb"];
+const MONTH = 10, YEAR = 2026; // novembro
+const all = EVENTS.concat(UNDATED);
+const active = new Set(Object.keys(TYPES));
+let selected = "p1";
+
+const pad = n => String(n).padStart(2,"0");
+const fmtDate = d => `${WD[new Date(YEAR,MONTH,d).getDay()]}. ${pad(d)}/11`;
+function approvalBy(d){
+  const dt = new Date(YEAR,MONTH,d); let n = 0;
+  while(n<2){ dt.setDate(dt.getDate()-1); const w = dt.getDay(); if(w!==0 && w!==6) n++; }
+  return `${WD[dt.getDay()]}. ${pad(dt.getDate())}/${pad(dt.getMonth()+1)}`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function scope(){
+  const count = t => all.filter(e => e.type===t).length;
+  const approved = all.filter(e => ["feed","reel"].includes(e.type) && e.status==="ok").length;
+  const total = all.filter(e => ["feed","reel"].includes(e.type)).length;
+  const f = count("feed");
+  document.getElementById("scope").innerHTML = `
+    <div class="${f>PLAN.feed?"over":""}"><b>${f}/${PLAN.feed}</b><span>posts de feed</span></div>
+    <div><b>${count("reel")}/${PLAN.reel}</b><span>Reels</span></div>
+    <div><b>${count("story")}/${PLAN.story}</b><span>Stories (sugeridos)</span></div>
+    <div><b>${approved}/${total}</b><span>pautas aprovadas</span></div>`;
+  const al = [];
+  if(f>PLAN.feed) al.push(["bad",`Há ${f} posts de feed planejados e o plano inclui ${PLAN.feed}. Escolher qual sai ou combinar o post extra com a Diana como serviço adicional.`]);
+  al.push(["warn","O post de 06/11 (BPO e contabilidade) sai amanhã e ainda está em ajuste."]);
+  document.getElementById("alerts").innerHTML = al.map(([k,t]) => `<div class="alert ${k}">${esc(t)}</div>`).join("");
+}
+
+function chips(){
+  document.getElementById("chips").innerHTML = Object.entries(TYPES).map(([k,v]) =>
+    `<button class="chip" id="chip-${k}" data-k="${k}" aria-pressed="${active.has(k)}" style="--c:var(${v.c})"><i></i>${v.label}</button>`).join("");
+  document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+    const k = b.dataset.k; active.has(k) ? active.delete(k) : active.add(k); render();
+  });
+}
+
+function evButton(e, cls){
+  const t = TYPES[e.type], st = e.status ? STATUS[e.status] : null;
+  const dl = e.deadline ? " deadline" : "";
+  const sel = e.id===selected ? " sel" : "";
+  if(cls==="ev") return `<button class="ev${dl}${sel}" data-id="${e.id}" style="--c:var(${t.c})"><span class="bar"></span>${st?`<i class="dot" style="--s:var(${st.s})"></i>`:""}<span class="t">${esc(e.title)}</span></button>`;
+  return `<button class="li${dl}${sel}" data-id="${e.id}" style="--c:var(${t.c})"><span class="bar"></span><span class="x">${esc(e.title)}<small>${e.fmt?esc(e.fmt):t.label}${st?" · "+st.label:""}</small></span></button>`;
+}
+
+function render(){
+  chips();
+  const vis = EVENTS.filter(e => active.has(e.type));
+  const first = new Date(YEAR,MONTH,1).getDay();
+  const days = new Date(YEAR,MONTH+1,0).getDate();
+  const cells = Math.ceil((first+days)/7)*7;
+  const today = new Date(); const isMonth = today.getFullYear()===YEAR && today.getMonth()===MONTH;
+  let g = "";
+  for(let i=0;i<cells;i++){
+    const d = i-first+1, inMonth = d>=1 && d<=days;
+    const its = inMonth ? vis.filter(e => e.d===d) : [];
+    const isToday = inMonth && isMonth && today.getDate()===d;
+    g += `<div class="day${inMonth?"":" out"}${isToday?" today":""}">${inMonth?`<span class="n"><b>${d}</b>${isToday?"<span>hoje</span>":""}</span>`:""}${its.map(e=>evButton(e,"ev")).join("")}</div>`;
+  }
+  document.getElementById("grid").innerHTML = g;
+
+  let l = "";
+  for(let d=1; d<=days; d++){
+    const its = vis.filter(e => e.d===d); if(!its.length) continue;
+    l += `<div class="lday"><div class="d"><b>${pad(d)}</b>${WD[new Date(YEAR,MONTH,d).getDay()]}</div><div class="items">${its.map(e=>evButton(e,"li")).join("")}</div></div>`;
+  }
+  document.getElementById("list").innerHTML = l || `<p class="empty" style="padding:16px">Nenhum item com esses filtros.</p>`;
+
+  document.getElementById("tray").innerHTML = UNDATED.filter(e=>active.has(e.type)).map(e => {
+    const st = STATUS[e.status];
+    return `<button class="card" data-id="${e.id}" style="--c:var(${TYPES[e.type].c})"><span class="meta" style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag k">${esc(e.fmt)}</span><span class="tag"><i class="dot" style="--s:var(${st.s})"></i>${st.label}</span></span><b>${esc(e.title)}</b><small>Data a confirmar · após a data de fundação</small></button>`;
+  }).join("") || `<p class="empty">Nenhum item com esses filtros.</p>`;
+
+  document.querySelectorAll("[data-id]").forEach(b => b.onclick = () => {
+    selected = b.dataset.id; render();
+    if(window.matchMedia("(max-width:900px)").matches) document.getElementById("panel").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
+  });
+  panel();
+}
+
+function panel(){
+  const e = all.find(x => x.id===selected);
+  const p = document.getElementById("panel");
+  if(!e){ p.innerHTML = `<p class="empty">Toque em um item do calendário para ver tema, objetivo e CTA.</p>`; return; }
+  const t = TYPES[e.type], st = e.status ? STATUS[e.status] : null;
+  const when = e.d ? fmtDate(e.d) : "Data a confirmar";
+  const rows = [];
+  rows.push(["Data", when]);
+  if(e.pilar) rows.push(["Pilar", e.pilar]);
+  if(e.idea) rows.push([e.deadline?"Detalhe":"Ideia", e.idea]);
+  if(e.cta) rows.push(["CTA", e.cta]);
+  if(e.d && ["feed","reel","story"].includes(e.type)) rows.push(["Aprovação até", approvalBy(e.d)]);
+  if(e.video) rows.push(["Vídeo da Diana até", e.video]);
+  p.innerHTML = `
+    <div class="meta"><span class="tag k" style="--c:var(${t.c})">${esc(e.fmt||t.label)}</span>${st?`<span class="tag"><i class="dot" style="--s:var(${st.s})"></i>${st.label}</span>`:""}</div>
+    <h2>${esc(e.title)}</h2>
+    <dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+    ${e.note?`<div class="note"><b>Retorno da Diana</b>${esc(e.note)}</div>`:""}`;
+}
+
+scope(); render();
+</script>
