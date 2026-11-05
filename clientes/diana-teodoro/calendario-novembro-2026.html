@@ -84,6 +84,23 @@ dd{margin:0;min-width:0}
 .note{border-left:2px solid var(--warn);padding:6px 10px;background:var(--soft);border-radius:0 6px 6px 0;font-size:13.5px}
 .note b{display:block;font-size:11px;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
 .empty{color:var(--muted);font-size:14px}
+.approve{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.approve h3{font-family:var(--f-mono);font-weight:500;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.opt{font:inherit;font-size:13px;font-weight:500;padding:9px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.opt[aria-pressed="true"]{background:var(--s);border-color:var(--s);color:var(--surface)}
+.opt:focus-visible,.send:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.approve label{font-size:12px;color:var(--muted)}
+.approve textarea{font:inherit;font-size:14px;width:100%;min-height:76px;resize:vertical;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.send{font:inherit;font-weight:600;font-size:14px;padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:var(--surface);cursor:pointer}
+.send:disabled{opacity:.5;cursor:default}
+.msg{font-size:13px;color:var(--muted);min-height:1.2em}
+.msg.err{color:var(--bad)}
+.decided{font-size:13px;color:var(--muted)}
+.decided b{color:var(--ink);font-weight:600}
+.howto{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:12px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px}
+.howto strong{font-weight:600}
+.howto .live{margin-left:auto;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
 
 .list{display:none;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
 .lday{display:grid;grid-template-columns:56px minmax(0,1fr);border-bottom:1px solid var(--line)}
@@ -121,6 +138,8 @@ section.tray h3,section.notes h3{font-family:var(--f-display);font-weight:500;fo
     </div>
     <div class="scope" id="scope" aria-label="Entregas do plano"></div>
   </header>
+
+  <div class="howto"><strong>Diana, para aprovar:</strong><span>toque em um conteúdo, escolha Aprovar, Ajustar ou Trocar tema e envie. A agência vê sua resposta na hora.</span><span class="live" id="live">Conectando…</span></div>
 
   <div class="alerts" id="alerts"></div>
 
@@ -171,8 +190,15 @@ const STATUS = {
   ok:   {label:"Aprovado",                    s:"--ok"},
   warn: {label:"Em ajuste",                   s:"--warn"},
   bad:  {label:"Tema novo · aguarda aprovação", s:"--bad"},
-  idea: {label:"Sugestão da agência",         s:"--idea"}
+  idea: {label:"Sugestão da agência",         s:"--idea"},
+  trocar:{label:"Trocar tema",                s:"--bad"}
 };
+const DECISIONS = {aprovado:{label:"Aprovar", st:"ok"}, ajustar:{label:"Ajustar", st:"warn"}, trocar:{label:"Trocar tema", st:"trocar"}};
+const decisions = {};          // id -> {decisao, comentario, em, por}
+let db = null, userNs = null, names = {};
+const drafts = {};             // id -> {decisao, comentario} ainda não enviados
+const effStatus = e => decisions[e.id] ? DECISIONS[decisions[e.id].decisao]?.st || e.status : e.status;
+const isContent = e => ["feed","reel","story"].includes(e.type);
 
 /* Pautas: planilha "Temas instagram DT" (revisada pela Diana em 05/11). */
 const EVENTS = [
@@ -276,7 +302,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 
 function scope(){
   const count = t => all.filter(e => e.type===t).length;
-  const approved = all.filter(e => ["feed","reel"].includes(e.type) && e.status==="ok").length;
+  const approved = all.filter(e => ["feed","reel"].includes(e.type) && effStatus(e)==="ok").length;
   const total = all.filter(e => ["feed","reel"].includes(e.type)).length;
   const f = count("feed");
   document.getElementById("scope").innerHTML = `
@@ -286,7 +312,8 @@ function scope(){
     <div><b>${approved}/${total}</b><span>pautas aprovadas</span></div>`;
   const al = [];
   if(f>PLAN.feed) al.push(["bad",`Há ${f} posts de feed planejados e o plano inclui ${PLAN.feed}. Escolher qual sai ou combinar o post extra com a Diana como serviço adicional.`]);
-  al.push(["warn","O post de 06/11 (BPO e contabilidade) sai amanhã e ainda está em ajuste."]);
+  const pend = EVENTS.filter(e => ["feed","reel"].includes(e.type) && effStatus(e)!=="ok" && e.d && e.d<=new Date().getDate()+2 && new Date().getMonth()===MONTH);
+  pend.forEach(e => al.push(["warn",`O conteúdo de ${pad(e.d)}/11 (${e.title}) está perto da data e ainda não foi aprovado.`]));
   document.getElementById("alerts").innerHTML = al.map(([k,t]) => `<div class="alert ${k}">${esc(t)}</div>`).join("");
 }
 
@@ -299,7 +326,7 @@ function chips(){
 }
 
 function evButton(e, cls){
-  const t = TYPES[e.type], st = e.status ? STATUS[e.status] : null;
+  const t = TYPES[e.type], st = effStatus(e) ? STATUS[effStatus(e)] : null;
   const dl = e.deadline ? " deadline" : "";
   const sel = e.id===selected ? " sel" : "";
   if(cls==="ev") return `<button class="ev${dl}${sel}" data-id="${e.id}" style="--c:var(${t.c})"><span class="bar"></span>${st?`<i class="dot" style="--s:var(${st.s})"></i>`:""}<span class="t">${esc(e.title)}</span></button>`;
@@ -330,10 +357,11 @@ function render(){
   document.getElementById("list").innerHTML = l || `<p class="empty" style="padding:16px">Nenhum item com esses filtros.</p>`;
 
   document.getElementById("tray").innerHTML = UNDATED.filter(e=>active.has(e.type)).map(e => {
-    const st = STATUS[e.status];
+    const st = STATUS[effStatus(e)];
     return `<button class="card" data-id="${e.id}" style="--c:var(${TYPES[e.type].c})"><span class="meta" style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag k">${esc(e.fmt)}</span><span class="tag"><i class="dot" style="--s:var(${st.s})"></i>${st.label}</span></span><b>${esc(e.title)}</b><small>Data a confirmar · após a data de fundação</small></button>`;
   }).join("") || `<p class="empty">Nenhum item com esses filtros.</p>`;
 
+  scope();
   document.querySelectorAll("[data-id]").forEach(b => b.onclick = () => {
     selected = b.dataset.id; render();
     if(window.matchMedia("(max-width:900px)").matches) document.getElementById("panel").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
@@ -345,7 +373,7 @@ function panel(){
   const e = all.find(x => x.id===selected);
   const p = document.getElementById("panel");
   if(!e){ p.innerHTML = `<p class="empty">Toque em um item do calendário para ver tema, objetivo e CTA.</p>`; return; }
-  const t = TYPES[e.type], st = e.status ? STATUS[e.status] : null;
+  const t = TYPES[e.type], st = effStatus(e) ? STATUS[effStatus(e)] : null;
   const when = e.d ? fmtDate(e.d) : "Data a confirmar";
   const rows = [];
   rows.push(["Data", when]);
@@ -358,8 +386,66 @@ function panel(){
     <div class="meta"><span class="tag k" style="--c:var(${t.c})">${esc(e.fmt||t.label)}</span>${st?`<span class="tag"><i class="dot" style="--s:var(${st.s})"></i>${st.label}</span>`:""}</div>
     <h2>${esc(e.title)}</h2>
     <dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
-    ${e.note?`<div class="note"><b>Retorno da Diana</b>${esc(e.note)}</div>`:""}`;
+    ${e.note?`<div class="note"><b>Retorno anterior da Diana</b>${esc(e.note)}</div>`:""}
+    ${isContent(e) ? approveBox(e) : ""}`;
+  if(isContent(e)) wireApprove(e);
 }
 
-scope(); render();
+function approveBox(e){
+  const dec = decisions[e.id];
+  const dr = drafts[e.id] || (drafts[e.id] = {decisao: dec?.decisao || "", comentario: dec?.comentario || ""});
+  const last = dec ? `<p class="decided">Última resposta: <b>${esc(DECISIONS[dec.decisao]?.label || dec.decisao)}</b>${dec.por?` · ${esc(names[dec.por] || "Diana")}`:""}${dec.em?` · ${new Date(dec.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:""}${dec.comentario?`<br>“${esc(dec.comentario)}”`:""}</p>` : "";
+  if(!db) return `<div class="approve"><h3>Aprovação</h3>${last}<p class="msg">Entre com sua conta Claude para aprovar este conteúdo.</p></div>`;
+  return `<div class="approve"><h3>Sua aprovação</h3>${last}
+    <div class="opts" role="group" aria-label="Decisão">${Object.entries(DECISIONS).map(([k,v]) =>
+      `<button class="opt" id="opt-${k}" data-dec="${k}" aria-pressed="${dr.decisao===k}" style="--s:var(${STATUS[v.st].s})">${v.label}</button>`).join("")}</div>
+    <label for="coment">Comentário ${dr.decisao==="aprovado"?"(opcional)":"(diga o que mudar)"}</label>
+    <textarea id="coment" placeholder="Ex.: trocar o CTA por…">${esc(dr.comentario)}</textarea>
+    <button class="send" id="send" ${dr.decisao?"":"disabled"}>Enviar resposta</button>
+    <p class="msg" id="amsg" role="status"></p></div>`;
+}
+
+function wireApprove(e){
+  if(!db) return;
+  const dr = drafts[e.id];
+  document.querySelectorAll(".opt").forEach(b => b.onclick = () => { dr.decisao = b.dataset.dec; panel(); });
+  const ta = document.getElementById("coment");
+  ta.oninput = () => { dr.comentario = ta.value; };
+  document.getElementById("send").onclick = async (ev) => {
+    const btn = ev.currentTarget, msg = document.getElementById("amsg");
+    if(dr.decisao!=="aprovado" && !dr.comentario.trim()){ msg.className="msg err"; msg.textContent="Escreva no comentário o que precisa mudar."; ta.focus(); return; }
+    btn.disabled = true; msg.className="msg"; msg.textContent = "Enviando…";
+    let por = null; try{ por = userNs ? await userNs.id() : null; }catch(_){}
+    const body = {decisao: dr.decisao, comentario: dr.comentario.trim(), em: new Date().toISOString(), por, titulo: e.title};
+    try{
+      await db.collection("aprovacoes").doc(e.id).set(body);
+      decisions[e.id] = body; delete drafts[e.id];
+      render();
+      const m = document.getElementById("amsg"); if(m){ m.textContent = "Resposta enviada. Obrigada!"; }
+    }catch(err){
+      btn.disabled = false; msg.className = "msg err";
+      msg.textContent = err?.code==="quota_exceeded" ? "Não foi possível salvar: o espaço de dados está cheio. Avise a agência." : "Não foi possível salvar. Verifique se você tem permissão para responder nesta página e tente de novo.";
+    }
+  };
+}
+
+async function initDb(){
+  const live = document.getElementById("live");
+  try{ userNs = await window.claude?.use?.("user"); }catch(_){}
+  try{ db = await window.claude?.use?.("db"); }catch(_){ db = null; }
+  if(!db){ live.textContent = "Somente leitura"; render(); return; }
+  let first = true;
+  const timer = setTimeout(() => { if(first) live.textContent = "Sem resposta do servidor"; }, 10000);
+  db.collection("aprovacoes").onSnapshot(async snap => {
+    first = false; clearTimeout(timer);
+    for(const k in decisions) delete decisions[k];
+    snap.docs.forEach(d => { const v = d.data(); if(v && DECISIONS[v.decisao]) decisions[d.id] = v; });
+    const ids = [...new Set(Object.values(decisions).map(v => v.por).filter(Boolean))];
+    if(userNs && ids.length){ try{ const ps = await userNs.profiles(ids); ids.forEach(i => names[i] = ps[i]?.name || ""); }catch(_){} }
+    live.textContent = "Respostas ao vivo";
+    render();
+  }, () => { clearTimeout(timer); live.textContent = "Conexão perdida · recarregue a página"; });
+}
+
+render(); initDb();
 </script>
