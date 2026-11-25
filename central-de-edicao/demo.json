@@ -1,0 +1,310 @@
+{
+  "clients": [
+    {
+      "id": "demo-aurora",
+      "demo": true,
+      "name": "Aurora Cafés (DEMO)",
+      "segment": "Cafeteria e torrefação de cafés especiais",
+      "tone": "Acolhedor, especialista, sem pedantismo",
+      "audience": "Adultos de 25 a 45 anos que tomam café todo dia e querem entender o que compram",
+      "identity": "Tons terrosos e creme, tipografia serifada no logo, fotos com luz natural de janela",
+      "dos": "Mostrar processo real (torrador, prova, grãos). Falar de produtor e origem.",
+      "donts": "Nada de filtro saturado em grão de café. Evitar termos técnicos sem explicar.",
+      "createdAt": 1795478400000,
+      "updatedAt": 1795478400000
+    },
+    {
+      "id": "demo-vertice",
+      "demo": true,
+      "name": "Vértice Arquitetura (DEMO)",
+      "segment": "Escritório de arquitetura residencial",
+      "tone": "Sofisticado, calmo, técnico quando necessário",
+      "audience": "Casais de 30 a 50 anos planejando construção ou reforma",
+      "identity": "Preto, off-white e madeira. Muito respiro, câmera lenta e estável.",
+      "dos": "Planos abertos do projeto pronto, antes e depois, detalhes de material.",
+      "donts": "Cortes frenéticos, efeitos de glitch, música eletrônica agressiva.",
+      "createdAt": 1795392000000,
+      "updatedAt": 1795392000000
+    }
+  ],
+  "refs": [
+    {
+      "id": "demo-ref-1",
+      "demo": true,
+      "title": "Legenda em duas linhas com palavra-chave destacada (DEMO)",
+      "url": "",
+      "kind": "Legenda",
+      "clientId": "",
+      "notes": "Fonte sem serifa em peso 700, caixa alta só na palavra-chave, destaque em verde-limão. Máximo 5 palavras por linha.",
+      "createdAt": 1795478400000
+    },
+    {
+      "id": "demo-ref-2",
+      "demo": true,
+      "title": "Abertura por resultado antes do contexto (DEMO)",
+      "url": "",
+      "kind": "Estrutura",
+      "clientId": "",
+      "notes": "Mostrar o produto pronto ou a conclusão nos 2 primeiros segundos e só depois explicar quem fala e por quê.",
+      "createdAt": 1795478400000
+    },
+    {
+      "id": "demo-ref-3",
+      "demo": true,
+      "title": "Trilha lo-fi acústica para processo artesanal (DEMO)",
+      "url": "",
+      "kind": "Trilha",
+      "clientId": "demo-aurora",
+      "notes": "Violão dedilhado + batida leve, 80 a 90 BPM. Volume em -24 LUFS embaixo da fala.",
+      "createdAt": 1795478400000
+    }
+  ],
+  "projects": [
+    {
+      "id": "demo-torra",
+      "demo": true,
+      "name": "Torra passada do ponto (DEMO)",
+      "clientId": "demo-aurora",
+      "segment": "Cafés especiais",
+      "objective": "Gerar autoridade sobre torra e levar ao lote Mantiqueira",
+      "platform": "Instagram Reels",
+      "format": "Reels",
+      "duration": "30 a 40 s",
+      "audience": "Quem toma café todo dia e acha que amargo é sinônimo de forte",
+      "tone": "Especialista e próximo",
+      "cta": "Link do café na bio",
+      "contentType": "Conteúdo de autoridade",
+      "refsText": "Ver referência 'Abertura por resultado antes do contexto'",
+      "notes": "Material gravado em 24/11 na torrefação. Cliente aprova falar do lote Mantiqueira.",
+      "status": "em_edicao",
+      "createdAt": 1795478400000,
+      "updatedAt": 1795564800000,
+      "material": {
+        "transcript": "[00:00–00:06] Oi, gente, é... tudo bem? Eu sou a Marina, sou a fundadora da Aurora Cafés, e hoje eu quero falar um pouquinho sobre torra.\n[00:06–00:09] (pausa; Marina olha para fora da câmera e retoma)\n[00:09–00:21] Então, a maioria das pessoas acha que café amargo é café forte. Mas, na verdade, hmm, o amargor quase sempre é sinal de torra passada do ponto.\n[00:21–00:30] Quando a gente torra demais, a gente queima os açúcares do grão e apaga as notas que o produtor levou anos pra construir.\n[00:30–00:34] É... deixa eu falar de novo. Quando a gente torra demais...\n[00:34–00:46] Aqui na Aurora cada lote tem uma curva de torra própria. A gente prova cada lote antes de liberar.\n[00:46–00:58] Teve um lote da Mantiqueira que eu quase vendi errado. Na prova eu senti um amargor e voltei a curva. Ficou com notas de caramelo e laranja. Hoje é o nosso mais vendido.\n[00:58–01:06] Então é isso, se você gosta de café, presta atenção na torra, tá? Hmm... é isso.\n[01:06–01:12] Ah, e o link pro nosso café tá na bio.",
+        "scenes": "IMG_4821.MOV: Marina em plano médio, câmera fixa, luz de janela à esquerda, fundo com sacas de café. Lapela.\nIMG_4822.MOV: B-roll do torrador funcionando, grãos girando no tambor e caindo no resfriador (cerca de 40 s).\nIMG_4823.MOV: B-roll da prova (cupping): colher quebrando a crosta, Marina provando, anotação na ficha (cerca de 25 s).",
+        "notes": "O som do torrador ficou bom no IMG_4822 e pode servir de ambiência.",
+        "files": [
+          {
+            "id": "demo-f1", "name": "IMG_4821.MOV (DEMO)", "kind": "video", "size": 214000000,
+            "meta": { "width": 1080, "height": 1920, "duration": 72, "fps": 30, "orientation": "Vertical", "aspect": "9:16" },
+            "audio": { "peakDb": -2.1, "rmsDb": -21.4, "clipped": 0, "silences": [[6.1, 8.9], [57.6, 58.4], [63.2, 64.0]] }
+          },
+          {
+            "id": "demo-f2", "name": "IMG_4822.MOV (DEMO)", "kind": "video", "size": 388000000,
+            "meta": { "width": 1080, "height": 1920, "duration": 41, "fps": 60, "orientation": "Vertical", "aspect": "9:16" }
+          },
+          {
+            "id": "demo-f3", "name": "IMG_4823.MOV (DEMO)", "kind": "video", "size": 251000000,
+            "meta": { "width": 1080, "height": 1920, "duration": 26, "fps": 30, "orientation": "Vertical", "aspect": "9:16" }
+          }
+        ]
+      },
+      "done": { "r1": true, "r2": true },
+      "qcManual": {},
+      "history": [
+        { "step": "diag", "at": 1795564200000 },
+        { "step": "narr", "at": 1795564300000 },
+        { "step": "roteiro", "at": 1795564400000 },
+        { "step": "tecnica", "at": 1795564500000 },
+        { "step": "publi", "at": 1795564600000 },
+        { "step": "qc", "at": 1795564700000 },
+        { "step": "capcut", "at": 1795564800000 }
+      ],
+      "steps": {
+        "diag": { "at": 1795564200000, "data": {
+          "resumo": "Marina, fundadora da Aurora, explica que amargor no café costuma indicar torra excessiva, mostra que a Aurora ajusta a curva de cada lote e conta como corrigiu o lote Mantiqueira, hoje o mais vendido.",
+          "assunto": "Torra de café e o mito de que amargo é forte",
+          "mensagem_central": "Café amargo não é café forte: é, quase sempre, torra passada do ponto. A Aurora prova cada lote para evitar isso.",
+          "melhores_momentos": [
+            { "ref": "00:09–00:21 'a maioria das pessoas acha que café amargo é café forte'", "motivo": "Quebra uma crença comum. É o gancho natural do vídeo." },
+            { "ref": "00:46–00:58 história do lote Mantiqueira", "motivo": "Única história concreta, com conflito e resultado. Gera prova e desejo." },
+            { "ref": "IMG_4823 colher quebrando a crosta", "motivo": "Imagem de processo real que comprova a fala sobre provar cada lote." }
+          ],
+          "dispensaveis": [
+            { "ref": "00:00–00:02 'Oi, gente, é... tudo bem?'", "motivo": "Saudação sem informação nos segundos mais valiosos." },
+            { "ref": "00:06–00:09 pausa olhando para fora", "motivo": "Silêncio medido de 2,8 s sem função narrativa." },
+            { "ref": "00:30–00:34 'deixa eu falar de novo'", "motivo": "Erro de gravação; a fala correta já existe em 00:21–00:30." },
+            { "ref": "00:58–01:06 'Então é isso... é isso'", "motivo": "Fechamento genérico que derruba a energia antes do CTA." }
+          ],
+          "repeticoes": ["'Quando a gente torra demais' aparece duas vezes (00:21 e 00:30)."],
+          "perda_ritmo": [{ "ref": "00:34–00:46", "motivo": "Fala explicativa longa em plano fixo. Precisa de B-roll do torrador e da prova." }],
+          "momentos_emocionais": ["'eu quase vendi errado' (vulnerabilidade da fundadora)", "'Hoje é o nosso mais vendido' (resolução)"],
+          "vicios": ["'é...'", "'hmm'", "'então'", "'tá?'"],
+          "erros": ["Recomeço de frase em 00:30–00:34"],
+          "potencial_retencao": { "nota": 7, "justificativa": "O gancho existe mas está escondido no segundo 9. Reordenado e com B-roll, o material sustenta 35 a 40 s." },
+          "melhor_narrativa": "Abrir pela crença errada, explicar a causa com B-roll do torrador, apresentar Marina como quem prova cada lote, fechar com a virada do lote Mantiqueira e o CTA original.",
+          "fatos": ["Áudio de lapela com pico em -2,1 dBFS, sem clipping medido.", "Três arquivos verticais 1080×1920."],
+          "hipoteses": ["O IMG_4822 a 60 fps permite câmera lenta de 50% nos grãos caindo, se exportado a 30 fps."],
+          "limitacoes": ["Análise feita sobre transcrição e descrição de cenas. Os vídeos não foram assistidos."],
+          "multivideo": {
+            "usar": [
+              { "arquivo": "IMG_4821.MOV", "motivo": "A-roll com toda a fala." },
+              { "arquivo": "IMG_4822.MOV", "motivo": "B-roll do torrador para cobrir a explicação técnica." },
+              { "arquivo": "IMG_4823.MOV", "motivo": "B-roll da prova para comprovar 'a gente prova cada lote'." }
+            ],
+            "descartar": [],
+            "combinacao": "Fala do IMG_4821 como espinha; B-roll cobre 00:17–00:46 do original."
+          }
+        }},
+        "narr": { "at": 1795564300000, "data": {
+          "conceito": "Desmontar um mito em 35 segundos com a autoridade de quem prova cada lote.",
+          "ganchos_falados": [
+            "A maioria das pessoas acha que café amargo é café forte.",
+            "Se o seu café é amargo, o problema provavelmente não é o grão.",
+            "Eu quase vendi errado o café que hoje é o nosso mais vendido.",
+            "Amargo não é forte. É outra coisa.",
+            "O amargor do seu café tem um nome: torra passada do ponto."
+          ],
+          "textos_abertura": [
+            "Café amargo ≠ café forte",
+            "O amargor tem explicação",
+            "Seu café está queimado?",
+            "Quase vendemos errado",
+            "Forte ou só amargo?"
+          ],
+          "estruturas": [
+            { "nome": "Mito → causa → prova", "sequencia": "Crença errada, explicação da torra, prova (lote Mantiqueira), CTA.", "quando_usar": "Reels e Shorts, foco em autoridade." },
+            { "nome": "História primeiro", "sequencia": "'Eu quase vendi errado', o que aconteceu na prova, a lição sobre torra, CTA.", "quando_usar": "Stories ou TikTok, foco em proximidade." },
+            { "nome": "Pergunta ao espectador", "sequencia": "'Seu café é amargo?', causa, como a Aurora resolve, CTA.", "quando_usar": "Peça de tráfego com legenda forte." }
+          ],
+          "estrutura_recomendada": "Mito → causa → prova. O material já tem as três partes; só estão fora de ordem.",
+          "reordenacoes": [
+            { "de": "00:09 (crença errada)", "para": "0:00", "motivo": "É a frase de maior tensão; vira o gancho." },
+            { "de": "00:02 (apresentação da Marina)", "para": "0:14", "motivo": "A apresentação ganha valor depois que o espectador já quer saber quem fala." }
+          ]
+        }},
+        "roteiro": { "at": 1795564400000, "data": {
+          "duracao_final_estimada": "cerca de 38 s",
+          "timecodes_confiaveis": true,
+          "linhas": [
+            { "id": "r1", "tempo_original": "00:12–00:17 (IMG_4821)", "tempo_final": "0:00–0:03", "dur_s": 3, "bloco": "gancho", "audio": "\"A maioria das pessoas acha que café amargo é café forte.\"", "acao": "Abrir direto na frase. Cortar o 'Então,' inicial.", "imagem": "A-roll com punch-in de 115% no rosto.", "texto": "CAFÉ AMARGO ≠ CAFÉ FORTE", "efeito": "Nenhum. O corte seco é o impacto.", "som": "Trilha entra em 0:00 a -28 LUFS.", "objetivo": "Quebrar a crença nos 3 primeiros segundos." },
+            { "id": "r2", "tempo_original": "00:17–00:21 (IMG_4821)", "tempo_final": "0:03–0:07", "dur_s": 4, "bloco": "contexto", "audio": "\"O amargor quase sempre é sinal de torra passada do ponto.\" (sem 'mas, na verdade, hmm')", "acao": "Jump cut removendo o 'hmm'.", "imagem": "Volta ao plano original (100%).", "texto": "torra PASSADA do ponto", "efeito": "—", "som": "—", "objetivo": "Entregar a resposta cedo e abrir a pergunta 'por quê?'." },
+            { "id": "r3", "tempo_original": "00:21–00:30 (IMG_4821) + IMG_4822 00:05–00:14", "tempo_final": "0:07–0:14", "dur_s": 7, "bloco": "desenvolvimento", "audio": "\"Quando a gente torra demais, a gente queima os açúcares do grão e apaga as notas que o produtor levou anos pra construir.\"", "acao": "Áudio do A-roll por baixo de B-roll do torrador.", "imagem": "IMG_4822: grãos girando no tambor, depois caindo no resfriador em câmera lenta 50%.", "texto": "queima os AÇÚCARES", "efeito": "Câmera lenta 50% (material 60 fps).", "som": "Ambiência do torrador a -30 dB por baixo da fala.", "objetivo": "Mostrar a causa em vez de só falar dela." },
+            { "id": "r4", "tempo_original": "00:02–00:05 (IMG_4821)", "tempo_final": "0:14–0:16", "dur_s": 2, "bloco": "contexto", "audio": "\"Eu sou a Marina, sou a fundadora da Aurora Cafés\"", "acao": "Trecho movido do início para cá.", "imagem": "A-roll, plano original.", "texto": "Marina · fundadora da Aurora Cafés (lower third)", "efeito": "Lower third entra com fade de 6 frames.", "som": "—", "objetivo": "Dar autoridade a quem explica." },
+            { "id": "r5", "tempo_original": "00:34–00:46 (IMG_4821) + IMG_4823 00:02–00:10", "tempo_final": "0:16–0:22", "dur_s": 6, "bloco": "desenvolvimento", "audio": "\"Aqui na Aurora cada lote tem uma curva de torra própria. A gente prova cada lote antes de liberar.\"", "acao": "Cobrir 'a gente prova' com a colher quebrando a crosta.", "imagem": "IMG_4823: colher na crosta, Marina provando.", "texto": "cada lote, uma CURVA", "efeito": "—", "som": "Som natural da colher (sem SFX adicional).", "objetivo": "Comprovar o processo com imagem real." },
+            { "id": "r6", "tempo_original": "00:46–00:58 (IMG_4821)", "tempo_final": "0:22–0:34", "dur_s": 12, "bloco": "virada", "audio": "\"Teve um lote da Mantiqueira que eu quase vendi errado. Na prova eu senti um amargor e voltei a curva. Ficou com notas de caramelo e laranja. Hoje é o nosso mais vendido.\"", "acao": "Manter a pausa curta antes de 'Hoje é o nosso mais vendido'.", "imagem": "A-roll; punch-in 110% em 'eu quase vendi errado'; volta em 'voltei a curva'.", "texto": "notas de CARAMELO + LARANJA", "efeito": "Punch-in seco, sem zoom animado.", "som": "Trilha sobe 2 dB após 'voltei a curva'.", "objetivo": "Prova social e emoção; prepara o CTA." },
+            { "id": "r7", "tempo_original": "01:06–01:12 (IMG_4821)", "tempo_final": "0:34–0:38", "dur_s": 4, "bloco": "cta", "audio": "\"O link pro nosso café tá na bio.\" (sem o 'Ah, e')", "acao": "Cortar direto da virada para o CTA.", "imagem": "IMG_4822: grãos no resfriador como fundo do cartão final.", "texto": "Lote Mantiqueira · link na bio", "efeito": "Cartão final de 1,5 s.", "som": "Trilha resolve e sai com fade de 1 s.", "objetivo": "Converter interesse em clique." }
+          ],
+          "cortes": [
+            { "trecho": "00:00–00:02 'Oi, gente, é... tudo bem?'", "motivo": "Sem informação no início." },
+            { "trecho": "00:06–00:09 pausa", "motivo": "Silêncio medido de 2,8 s." },
+            { "trecho": "00:30–00:34 recomeço", "motivo": "Erro de gravação já resolvido pela tomada anterior." },
+            { "trecho": "00:58–01:06 'Então é isso'", "motivo": "Fechamento genérico; o CTA vem logo após a virada." }
+          ],
+          "broll": [
+            { "momento": "0:07–0:14", "o_que": "Grãos girando no tambor e caindo no resfriador", "por_que": "Visualiza 'queima os açúcares'.", "fonte": "Material gravado (IMG_4822)" },
+            { "momento": "0:16–0:22", "o_que": "Colher quebrando a crosta na prova", "por_que": "Comprova 'a gente prova cada lote'.", "fonte": "Material gravado (IMG_4823)" }
+          ],
+          "legendas": {
+            "estilo": "Sans-serif 700, duas linhas no máximo, branco com contorno suave; palavra-chave em verde-limão.",
+            "regras": ["Até 5 palavras por linha", "Quebra em pausa natural da fala", "Manter acima dos 20% inferiores (zona de UI do Reels)", "Destacar 1 palavra por frase, no máximo"],
+            "destaques": ["amargo", "forte", "torra", "açúcares", "curva", "mais vendido"],
+            "exemplo": ["A maioria das pessoas", "acha que café AMARGO", "é café forte"]
+          }
+        }},
+        "tecnica": { "at": 1795564500000, "data": {
+          "trilha": { "estilo": "Acústica com violão dedilhado e batida leve, sem vocal", "bpm": "85 a 95", "intensidade": "Baixa no gancho, média na virada", "entradas": [
+            { "momento": "0:00", "acao": "Entra junto com a fala a -28 LUFS" },
+            { "momento": "0:28", "acao": "Sobe 2 dB após 'voltei a curva'" },
+            { "momento": "0:37", "acao": "Fade-out de 1 s" }
+          ]},
+          "efeitos": [
+            { "momento": "0:07", "som": "Ambiência real do torrador", "motivo": "Transição natural para o B-roll." },
+            { "momento": "0:34", "som": "Whoosh suave", "motivo": "Marca a entrada do cartão final." }
+          ],
+          "correcoes_imagem": [
+            { "problema": "Luz de janela à esquerda pode deixar o lado direito do rosto escuro", "correcao": "Sombras +10 apenas no A-roll; não mexer na saturação", "status": "hipotese" },
+            { "problema": "B-roll a 60 fps e A-roll a 30 fps", "correcao": "Timeline em 30 fps; usar o 60 fps para câmera lenta de 50%", "status": "observado" }
+          ],
+          "correcoes_audio": [
+            { "problema": "Pico em -2,1 dBFS no A-roll", "correcao": "Normalizar a fala para -14 LUFS integrados com limitador em -1 dBTP", "status": "observado" }
+          ],
+          "exportacao": { "resolucao": "1080×1920", "fps": "30", "codec": "H.264", "bitrate": "Recomendado do CapCut (alto)", "hdr": "Desligado (SDR)", "justificativa": "Material original 1080p vertical. 4K não acrescenta detalhe e o Reels recomprime. 30 fps mantém a cadência da fala." },
+          "verificacoes": [
+            { "item": "Resolução", "valor": "1080×1920 nos três arquivos", "fonte": "medido" },
+            { "item": "Taxa de quadros", "valor": "30 / 60 / 30 fps", "fonte": "medido" },
+            { "item": "HDR", "valor": "Não identificável no navegador", "fonte": "limitação" }
+          ]
+        }},
+        "publi": { "at": 1795564600000, "data": {
+          "titulos": ["Café amargo não é café forte", "O amargor do seu café tem explicação", "Quase vendemos errado o nosso melhor café", "Torra passada do ponto: como reconhecer", "Por que provamos cada lote antes de vender"],
+          "thumbs": ["Amargo ≠ forte", "Seu café queimou?", "Quase vendi errado", "O segredo é a torra", "Forte ou amargo?"],
+          "descricao": "A maioria das pessoas acha que café amargo é café forte. Quase sempre, é torra passada do ponto.\n\nAqui na Aurora cada lote tem uma curva de torra própria e passa pela prova antes de sair. Foi assim que o lote Mantiqueira chegou às notas de caramelo e laranja.\n\nO link do café está na bio.",
+          "hashtags": ["#cafeespecial", "#torradecafe", "#baristabrasil", "#cafeteria", "#coffeelover"],
+          "versoes": [
+            { "plataforma": "TikTok", "ajustes": "Abrir com 'Eu quase vendi errado' (estrutura História primeiro)." },
+            { "plataforma": "Stories", "ajustes": "Dividir em 3 telas com enquete 'Você acha que amargo é forte?'." }
+          ]
+        }},
+        "qc": { "at": 1795564700000, "data": {
+          "notas": { "gancho": 8, "retencao": 7, "clareza": 9, "ritmo": 8, "narrativa": 8, "plataforma": 8, "marca": 9 },
+          "checklist": [
+            { "pergunta": "O gancho é forte?", "ok": true, "comentario": "Crença comum desafiada em 3 s." },
+            { "pergunta": "A mensagem está clara?", "ok": true, "comentario": "Amargor = torra excessiva." },
+            { "pergunta": "Existe trecho dispensável?", "ok": true, "comentario": "Todos os cortes de vícios aplicados." },
+            { "pergunta": "O CTA faz sentido?", "ok": true, "comentario": "Ligado ao lote citado." },
+            { "pergunta": "As legendas estão legíveis?", "ok": false, "comentario": "Validar o contraste da legenda sobre o B-roll claro do resfriador." }
+          ],
+          "ajustes_prioritarios": ["Testar a legenda sobre o B-roll do resfriador em tela de celular com brilho baixo."]
+        }},
+        "capcut": { "at": 1795564800000, "data": {
+          "passos": [
+            { "etapa": "Projeto", "instrucao": "Novo projeto 9:16, 30 fps. Importar IMG_4821, IMG_4822 e IMG_4823." },
+            { "etapa": "Espinha", "instrucao": "Colocar IMG_4821 na faixa principal e dividir nos tempos originais da timeline." },
+            { "etapa": "Cortes", "instrucao": "Apagar 00:00–00:02, 00:06–00:09, 00:30–00:34 e 00:58–01:06." },
+            { "etapa": "Reordenar", "instrucao": "Arrastar o trecho 00:12–00:21 para o início e o trecho 00:02–00:05 para depois da explicação da torra." },
+            { "etapa": "B-roll", "instrucao": "Sobrepor IMG_4822 em 0:07–0:14 (Velocidade 0,5x) e IMG_4823 em 0:16–0:22." },
+            { "etapa": "Punch-ins", "instrucao": "Em 0:00, Escala 115%; em 'eu quase vendi errado', Escala 110%." },
+            { "etapa": "Legendas", "instrucao": "Legendas automáticas, revisar o texto, aplicar o estilo da agência e colorir as palavras-chave." },
+            { "etapa": "Áudio", "instrucao": "Fala em Normalizar volume. Trilha a 15% do volume com fade de 1 s no fim." },
+            { "etapa": "Exportar", "instrucao": "1080p, 30 fps, taxa de bits Recomendada, HDR desligado." }
+          ]
+        }}
+      }
+    },
+    {
+      "id": "demo-casa-lago",
+      "demo": true,
+      "name": "Casa do Lago: antes e depois (DEMO)",
+      "clientId": "demo-vertice",
+      "segment": "Arquitetura residencial",
+      "objective": "Mostrar a transformação do projeto e gerar pedidos de orçamento",
+      "platform": "Instagram Reels",
+      "format": "Reels",
+      "duration": "45 s",
+      "audience": "Casais planejando reforma",
+      "tone": "Calmo e sofisticado",
+      "cta": "Agende uma conversa pelo direct",
+      "contentType": "Vídeo de produto ou serviço",
+      "refsText": "",
+      "notes": "Aguardando a transcrição do depoimento dos moradores.",
+      "status": "em_analise",
+      "createdAt": 1795305600000,
+      "updatedAt": 1795392000000,
+      "material": { "transcript": "", "scenes": "", "notes": "", "files": [] },
+      "steps": {}, "history": [], "done": {}, "qcManual": {}
+    },
+    {
+      "id": "demo-bastidores",
+      "demo": true,
+      "name": "Bastidores da colheita (DEMO)",
+      "clientId": "demo-aurora",
+      "segment": "Cafés especiais",
+      "objective": "Aproximar o público da origem do café",
+      "platform": "Instagram Stories",
+      "format": "Stories",
+      "duration": "4 telas de 15 s",
+      "audience": "Seguidores atuais",
+      "tone": "Próximo e espontâneo",
+      "cta": "Responder à caixa de perguntas",
+      "contentType": "Conteúdo de bastidores",
+      "refsText": "",
+      "notes": "",
+      "status": "finalizado",
+      "createdAt": 1794700800000,
+      "updatedAt": 1794960000000,
+      "material": { "transcript": "", "scenes": "", "notes": "", "files": [] },
+      "steps": {}, "history": [], "done": {}, "qcManual": {}
+    }
+  ]
+}
