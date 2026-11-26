@@ -14,20 +14,20 @@ def snap(t):
 
 # (início, fim, zoom, centro_x, centro_y, nota) — tempos do arquivo original
 SEGMENTS = [
-    (0.00, 2.95, 1.60, 380, 1290, "Gancho: resultado lado a lado no iPad"),
+    (0.00, 2.95, 1.35, 380, 1290, "Gancho: resultado lado a lado no iPad"),
     (3.12, 9.62, 1.00, 540, 960, "Passo 1: toxina botulínica levantou o olhar"),
-    (9.92, 13.15, 1.25, 840, 560, "Efeito lifting do Botox (punch-in no rosto)"),
-    (21.50, 28.40, 1.70, 273, 1265, "Linhas de expressão: zoom na foto sorrindo"),
+    (9.92, 13.15, 1.10, 840, 560, "Efeito lifting do Botox (punch-in no rosto)"),
+    (21.50, 28.40, 1.40, 273, 1265, "Linhas de expressão: zoom na foto sorrindo"),
     (29.95, 34.02, 1.00, 540, 960, "Passo 2: ultrassom microfocado"),
-    (34.42, 45.20, 1.15, 420, 1150, "Diagnóstico: rosto pesando e flacidez"),
-    (46.36, 53.22, 1.25, 840, 520, "O que é o ultrassom microfocado"),
-    (59.94, 64.70, 1.80, 252, 1210, "Antes: 'dessa face, mais arredondadinha'"),
-    (65.30, 66.10, 1.80, 252, 1210, "Revelação: troca de foto no iPad"),
-    (67.60, 68.85, 1.80, 252, 1210, "'para essa face'"),
-    (69.00, 74.60, 1.80, 252, 1210, "Face mais fininha"),
-    (129.76, 132.85, 1.80, 252, 1283, "Queixo mais aparente"),
+    (34.42, 45.20, 1.06, 420, 1150, "Diagnóstico: rosto pesando e flacidez"),
+    (46.36, 53.22, 1.10, 840, 520, "O que é o ultrassom microfocado"),
+    (59.94, 64.70, 1.40, 252, 1210, "Antes: 'dessa face, mais arredondadinha'"),
+    (65.30, 66.10, 1.40, 252, 1210, "Revelação: troca de foto no iPad"),
+    (67.60, 68.85, 1.40, 252, 1210, "'para essa face'"),
+    (69.00, 74.60, 1.40, 252, 1210, "Face mais fininha"),
+    (129.76, 132.85, 1.40, 252, 1283, "Queixo mais aparente"),
     (139.95, 146.86, 1.00, 540, 960, "Comparando antes e depois"),
-    (146.86, 151.95, 1.60, 291, 1300, "Fecho: sem perder a naturalidade"),
+    (146.86, 151.95, 1.35, 291, 1300, "Fecho: sem perder a naturalidade"),
 ]
 SEGMENTS = [(snap(a), snap(b), z, cx, cy, n) for a, b, z, cx, cy, n in SEGMENTS]
 
@@ -38,16 +38,16 @@ def run(cmd):
 # Cada trecho começa no enquadramento do anterior e desliza até o seu em 0,5 s (ease in-out),
 # com um leve "respiro" de zoom contínuo (+3%) para a imagem nunca ficar parada.
 XD = 0.20          # duração da dissolução entre trechos
-EASE = 0.50        # duração do movimento de câmera entre enquadramentos
+EASE = 1.00        # duração do movimento de câmera entre enquadramentos
 def zoom_filter(prev, cur, d):
     (zp, xp, yp), (z, cx, cy) = prev, cur
     T = EASE if (zp, xp, yp) != (z, cx, cy) else 0.001
     E = f"if(lt(t,{T}),(1-cos(PI*t/{T}))/2,1)"
-    Z = f"(({zp})+(({z})-({zp}))*{E})*(1+0.03*t/{d:.3f})"
+    Z = f"(({zp})+(({z})-({zp}))*{E})*(1+0.02*t/{d:.3f})"
     CX = f"(({xp})+(({cx})-({xp}))*{E})"
     CY = f"(({yp})+(({cy})-({yp}))*{E})"
     return (f"scale=w='2*trunc({W}*{Z}/2)':h='2*trunc({H}*{Z}/2)':eval=frame:flags=bicubic,"
-            f"crop={W}:{H}:x='clip({CX}*iw/{W}-{W//2},0,iw-{W})':y='clip({CY}*ih/{H}-{H//2},0,ih-{H})'")
+            f"crop={W}:{H}:x='clip({CX}*{Z}-{W//2},0,2*trunc({W}*{Z}/2)-{W})':y='clip({CY}*{Z}-{H//2},0,2*trunc({H}*{Z}/2)-{H})'")
 
 seg_files, durs = [], []
 prev = (1.0, 540, 960)
