@@ -197,7 +197,7 @@ words = []
 for s in json.load(open("transcript.json")):
     for w in s["words"]:
         txt = w["w"].strip()
-        txt = txt.replace("TIE", "Tiê").replace("botolínica", "botulínica")
+        txt = txt.replace("TIE", "Thay").replace("botolínica", "botulínica")
         a, b = out_time(w["s"] + 0.02), out_time(w["e"] - 0.02)
         if a is None or b is None:
             continue
