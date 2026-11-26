@@ -47,7 +47,7 @@ seg_files, offsets, t = [], [], 0.0
 for i, (a, b, z, cx, cy, _) in enumerate(SEGMENTS):
     f = f"{OUT}/seg{i:02d}.mp4"
     d = b - a
-    run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a:.4f}", "-i", SRC, "-t", f"{d:.4f}",
+    if not os.path.exists(f.replace(".mp4", ".mov")): run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a:.4f}", "-i", SRC, "-t", f"{d:.4f}",
          "-vf", crop_filter(z, cx, cy) + ",fps=30,format=yuv420p",
          "-af", f"afade=t=in:d=0.015,afade=t=out:st={d-0.02:.3f}:d=0.02,aresample=48000",
          "-c:v", "libx264", "-crf", "14", "-preset", "medium", "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2",
@@ -126,11 +126,14 @@ SFX = [
     ("sfx_whoosh", seg_start(8) + 0.05, -16),      # troca de foto antes → depois
     ("sfx_whoosh_short", seg_start(13) - 0.16, -22),# zoom final
     ("sfx_shimmer", out_time(150.28), -21),        # "sem perder a naturalidade"
+    ("sfx_pop", TOTAL - 0.1, -19),                 # entra o card final
 ]
+CARD, XF = 3.2, 0.5
+FINAL = TOTAL + CARD - XF
 
 # ---------- 3. Mixagem de áudio ----------
 inputs = ["-i", f"{OUT}/cut.mov"]
-fc = ["[0:a]highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=8:release=120:makeup=2,loudnorm=I=-14:TP=-1.5:LRA=9[voz]"]
+fc = [f"[0:a]highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=8:release=120:makeup=2,loudnorm=I=-14:TP=-1.5:LRA=9,apad=whole_dur={FINAL:.3f}[voz]"]
 mix = ["[voz]"]
 for k, (name, at, db) in enumerate(SFX):
     inputs += ["-i", f"{OUT}/{name}.wav"]
@@ -168,30 +171,27 @@ def ts(x):
     x = max(0, x); h = int(x // 3600); m = int(x % 3600 // 60); s = x % 60
     return f"{h}:{m:02d}:{s:05.2f}"
 
-HL = "&H00A86FFF&"   # rosa (#FF6FA8 em BGR)
+import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import overlays
+os.makedirs(f"{OUT}/gfx", exist_ok=True)
+overlays.hook_title(f"{OUT}/gfx/hook.png")
+SELOS = [overlays.selo(f"{OUT}/gfx/selo1.png", "PASSO 1 ·", "TOXINA BOTULÍNICA"),
+         overlays.selo(f"{OUT}/gfx/selo2.png", "PASSO 2 ·", "ULTRASSOM MICROFOCADO"),
+         overlays.selo(f"{OUT}/gfx/selo3.png", "ANTES E", "DEPOIS")]
+overlays.lower_third(f"{OUT}/gfx/lower.png")
+overlays.end_card(f"{OUT}/gfx/end.png")
+
 lines = []
 for i, c in enumerate(chunks):
     start = c[0][1]
     end = min(c[-1][2] + 0.25, chunks[i + 1][0][1]) if i + 1 < len(chunks) else c[-1][2] + 0.4
     used = False; parts = []
     for txt, *_ in c:
-        clean = txt.rstrip(".,?!")
-        show = clean.upper()
+        show = txt.rstrip(".,!")
         if not used and txt in KEY:
-            parts.append(f"{{\\c{HL}}}{show}{{\\c&H00FFFFFF&}}"); used = True
+            parts.append("{\\fnMB Lora Medium Italic\\fs88}" + show.lower() + "{\\fnMB Montserrat SemiBold\\fs76}"); used = True
         else:
             parts.append(show)
-    lines.append(f"Dialogue: 1,{ts(start)},{ts(end)},Leg,,0,0,0,,{{\\fad(40,0)\\t(0,90,\\fscx104\\fscy104)\\t(90,160,\\fscx100\\fscy100)}}" + " ".join(parts))
-
-# Títulos
-s1, s2 = seg_start(1), seg_start(4)
-lines += [
-    f"Dialogue: 2,{ts(0)},{ts(seg_start(1))},Titulo,,0,0,0,,{{\\fad(0,150)}}BOTOX + ULTRASSOM\\N{{\\c{HL}}}MICROFOCADO",
-    f"Dialogue: 2,{ts(0)},{ts(seg_start(1))},Sub,,0,0,0,,{{\\fad(0,150)}}antes e depois",
-    f"Dialogue: 2,{ts(s1)},{ts(seg_start(4))},Selo,,0,0,0,,{{\\fad(120,120)}}PASSO 1 · TOXINA BOTULÍNICA",
-    f"Dialogue: 2,{ts(s2)},{ts(seg_start(12))},Selo,,0,0,0,,{{\\fad(120,120)}}PASSO 2 · ULTRASSOM MICROFOCADO",
-    f"Dialogue: 2,{ts(seg_start(12))},{ts(TOTAL)},Selo,,0,0,0,,{{\\fad(120,0)}}ANTES E DEPOIS",
-]
+    lines.append(f"Dialogue: 1,{ts(start)},{ts(end)},Leg,,0,0,0,,{{\\fad(60,0)}}" + " ".join(parts))
 ass = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {W}
@@ -201,22 +201,40 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Leg,Inter Black,72,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,5,2,2,90,90,470,1
-Style: Titulo,Inter Black,78,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,6,2,8,70,70,300,1
-Style: Sub,Inter ExtraBold,44,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,2,0,1,4,1,8,70,70,500,1
-Style: Selo,Inter ExtraBold,40,&H00FFFFFF,&H00FFFFFF,&H00000000,&HA0000000,0,0,0,0,100,100,3,0,3,14,0,8,70,70,290,1
+Style: Leg,MB Montserrat SemiBold,76,&H00ECF0F7,&H00ECF0F7,&H002A2C3A,&H782A2C3A,0,0,0,0,100,100,0.5,0,1,3.6,2.5,2,80,80,470,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """ + "\n".join(lines) + "\n"
 open(f"{OUT}/legendas.ass", "w").write(ass)
 
-# ---------- 5. Render final ----------
-fc.append(f"[0:v]ass={OUT}/legendas.ass:fontsdir=/usr/share/fonts/opentype/inter[v]")
+# ---------- 5. Render final: legendas + artes + card final ----------
+nA = len(inputs) // 2
+s1, s2, s3 = seg_start(1), seg_start(4), seg_start(12)
+GFX = [  # arquivo, x, y, início, fim
+    ("hook.png", 0, 240, 0, s1),
+    ("selo1.png", (W - SELOS[0][0]) // 2, 250, s1, s2),
+    ("selo2.png", (W - SELOS[1][0]) // 2, 250, s2, s3),
+    ("selo3.png", (W - SELOS[2][0]) // 2, 250, s3, TOTAL),
+    ("lower.png", 30, 560, s1 + 0.35, seg_start(2) - 0.05),
+]
+for g in GFX:
+    inputs += ["-loop", "1", "-framerate", "30", "-t", f"{TOTAL:.3f}", "-i", f"{OUT}/gfx/{g[0]}"]
+inputs += ["-loop", "1", "-framerate", "30", "-t", f"{CARD:.3f}", "-i", f"{OUT}/gfx/end.png"]
+fc.append(f"[0:v]ass={OUT}/legendas.ass:fontsdir=fonts,format=yuva420p[v0]")
+prev = "v0"
+for k, (name, x, y, a, b2) in enumerate(GFX):
+    idx = nA + k; fi = 0.0 if a == 0 else 0.25
+    fc.append(f"[{idx}:v]format=rgba,fade=t=in:st={a:.3f}:d={max(fi,0.01):.2f}:alpha=1,fade=t=out:st={b2-0.25:.3f}:d=0.25:alpha=1[g{k}]")
+    fc.append(f"[{prev}][g{k}]overlay={x}:{y}:enable='between(t,{a:.3f},{b2:.3f})'[v{k+1}]")
+    prev = f"v{k+1}"
+fc.append(f"[{prev}]format=yuv420p,fps=30,settb=AVTB[main]")
+fc.append(f"[{nA + len(GFX)}:v]format=yuv420p,fps=30,settb=AVTB[card]")
+fc.append(f"[main][card]xfade=transition=fade:duration={XF}:offset={TOTAL - XF:.3f}[v]")
+# áudio: estender para o card final + pop quando o card entra
 run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(fc), "-map", "[v]", "-map", "[a]",
      "-c:v", "libx264", "-crf", "18", "-preset", "slow", "-profile:v", "high", "-pix_fmt", "yuv420p",
      "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", "-r", "30",
-     "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", f"{OUT}/final.mp4"])
-
-json.dump({"total": TOTAL, "offsets": offsets, "segments": SEGMENTS, "sfx": SFX}, open(f"{OUT}/edl.json", "w"), indent=1, ensure_ascii=False)
-print(f"OK  duração final {TOTAL:.2f}s  ({len(SEGMENTS)} trechos, {len(chunks)} legendas)")
+     "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-t", f"{FINAL:.3f}", "-movflags", "+faststart", f"{OUT}/final.mp4"])
+json.dump({"total": FINAL, "offsets": offsets, "segments": SEGMENTS, "sfx": SFX}, open(f"{OUT}/edl.json", "w"), indent=1, ensure_ascii=False)
+print(f"OK  duração final {FINAL:.2f}s  ({len(SEGMENTS)} trechos, {len(chunks)} legendas)")
