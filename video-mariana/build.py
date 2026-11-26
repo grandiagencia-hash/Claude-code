@@ -31,34 +31,51 @@ SEGMENTS = [
 ]
 SEGMENTS = [(snap(a), snap(b), z, cx, cy, n) for a, b, z, cx, cy, n in SEGMENTS]
 
-def crop_filter(z, cx, cy):
-    if z == 1.0:
-        return f"scale={W}:{H}:flags=lanczos"
-    cw, ch = round(W / z / 2) * 2, round(H / z / 2) * 2
-    x0 = min(max(0, cx - cw // 2), W - cw)
-    y0 = min(max(0, cy - ch // 2), H - ch)
-    return f"crop={cw}:{ch}:{x0}:{y0},scale={W}:{H}:flags=lanczos"
-
 def run(cmd):
     subprocess.run(cmd, check=True)
 
-# ---------- 1. Cortes de vídeo + áudio por segmento ----------
-seg_files, offsets, t = [], [], 0.0
+# ---------- 1. Trechos com zoom animado (sem corte seco) ----------
+# Cada trecho começa no enquadramento do anterior e desliza até o seu em 0,5 s (ease in-out),
+# com um leve "respiro" de zoom contínuo (+3%) para a imagem nunca ficar parada.
+XD = 0.20          # duração da dissolução entre trechos
+EASE = 0.50        # duração do movimento de câmera entre enquadramentos
+def zoom_filter(prev, cur, d):
+    (zp, xp, yp), (z, cx, cy) = prev, cur
+    T = EASE if (zp, xp, yp) != (z, cx, cy) else 0.001
+    E = f"if(lt(t,{T}),(1-cos(PI*t/{T}))/2,1)"
+    Z = f"(({zp})+(({z})-({zp}))*{E})*(1+0.03*t/{d:.3f})"
+    CX = f"(({xp})+(({cx})-({xp}))*{E})"
+    CY = f"(({yp})+(({cy})-({yp}))*{E})"
+    return (f"scale=w='2*trunc({W}*{Z}/2)':h='2*trunc({H}*{Z}/2)':eval=frame:flags=bicubic,"
+            f"crop={W}:{H}:x='clip({CX}*iw/{W}-{W//2},0,iw-{W})':y='clip({CY}*ih/{H}-{H//2},0,ih-{H})'")
+
+seg_files, durs = [], []
+prev = (1.0, 540, 960)
 for i, (a, b, z, cx, cy, _) in enumerate(SEGMENTS):
-    f = f"{OUT}/seg{i:02d}.mp4"
-    d = b - a
-    if not os.path.exists(f.replace(".mp4", ".mov")): run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a:.4f}", "-i", SRC, "-t", f"{d:.4f}",
-         "-vf", crop_filter(z, cx, cy) + ",fps=30,format=yuv420p",
-         "-af", f"afade=t=in:d=0.015,afade=t=out:st={d-0.02:.3f}:d=0.02,aresample=48000",
-         "-c:v", "libx264", "-crf", "14", "-preset", "medium", "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2",
-         f.replace(".mp4", ".mov")])
-    seg_files.append(f.replace(".mp4", ".mov"))
-    offsets.append(t)
-    t += d
-TOTAL = t
-with open(f"{OUT}/concat.txt", "w") as fh:
-    fh.writelines(f"file '{os.path.basename(s)}'\n" for s in seg_files)
-run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", f"{OUT}/concat.txt", "-c", "copy", f"{OUT}/cut.mov"])
+    f = f"{OUT}/segz{i:02d}.mov"; d = b - a
+    if not os.path.exists(f):
+        run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a:.4f}", "-i", SRC, "-t", f"{d:.4f}",
+             "-vf", zoom_filter(prev, (z, cx, cy), d) + ",fps=30,format=yuv420p,settb=AVTB",
+             "-af", "aresample=48000", "-c:v", "libx264", "-crf", "14", "-preset", "medium",
+             "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2", f])
+    seg_files.append(f); durs.append(d); prev = (z, cx, cy)
+
+offsets, acc = [], 0.0
+for i, d in enumerate(durs):
+    offsets.append(acc - i * XD if i else 0.0)
+    acc += d
+offsets = [sum(durs[:i]) - i * XD for i in range(len(durs))]
+TOTAL = sum(durs) - (len(durs) - 1) * XD
+
+if not os.path.exists(f"{OUT}/cutz.mov") or os.path.getmtime(f"{OUT}/cutz.mov") < max(os.path.getmtime(s) for s in seg_files):
+    ins = sum((["-i", s] for s in seg_files), [])
+    g = []; v, a_ = "0:v", "0:a"
+    for i in range(1, len(seg_files)):
+        g.append(f"[{v}][{i}:v]xfade=transition=fade:duration={XD}:offset={offsets[i]:.4f}[xv{i}]")
+        g.append(f"[{a_}][{i}:a]acrossfade=d={XD}:c1=tri:c2=tri[xa{i}]")
+        v, a_ = f"xv{i}", f"xa{i}"
+    run(["ffmpeg", "-v", "error", "-y", *ins, "-filter_complex", ";".join(g), "-map", f"[{v}]", "-map", f"[{a_}]",
+         "-c:v", "libx264", "-crf", "14", "-preset", "medium", "-c:a", "pcm_s16le", f"{OUT}/cutz.mov"])
 
 def out_time(src_t):
     for (a, b, *_), off in zip(SEGMENTS, offsets):
@@ -66,81 +83,114 @@ def out_time(src_t):
             return off + (src_t - a)
     return None
 
-# ---------- 2. Efeitos sonoros sintetizados (sem direitos autorais) ----------
+# ---------- 2. Efeitos sonoros (sintetizados, estéreo, com ambiência) ----------
 SR = 48000
-def save(name, x):
-    x = np.clip(x, -1, 1)
-    st = np.stack([x, x], 1)
+RNG = np.random.default_rng(11)
+def norm(x, peak=0.9):
+    m = np.max(np.abs(x)); return x / m * peak if m else x
+def save(name, st):
+    st = np.clip(st, -1, 1)
+    if st.ndim == 1: st = np.stack([st, st], 1)
     with wave.open(f"{OUT}/{name}.wav", "wb") as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes((st * 32767).astype(np.int16).tobytes())
-
-def whoosh(dur=0.5, f0=300, f1=4000):
-    n = int(SR * dur); rng = np.random.default_rng(7); noise = rng.standard_normal(n)
-    out = np.zeros(n); y1 = y2 = 0.0; x1 = x2 = 0.0
+def bandsweep(n, f0, f1, q=1.1, curve=0.5, seed=7):
+    noise = np.random.default_rng(seed).standard_normal(n); out = np.zeros(n)
+    y1 = y2 = x1 = x2 = 0.0
     for i in range(n):
-        p = i / n
-        fc = f0 * (f1 / f0) ** math.sin(math.pi * p * 0.5 + 0.0) if p < 1 else f1
-        w0 = 2 * math.pi * fc / SR; q = 1.2; al = math.sin(w0) / (2 * q)
-        b0, b2, a0, a1, a2 = al, -al, 1 + al, -2 * math.cos(w0), 1 - al
-        x0 = noise[i]
-        y0 = (b0 * x0 + b2 * x2 - a1 * y1 - a2 * y2) / a0
-        x2, x1, y2, y1 = x1, x0, y1, y0
-        out[i] = y0
-    env = np.sin(np.linspace(0, math.pi, n)) ** 1.6
-    out = out * env
-    return out / np.max(np.abs(out)) * 0.9
-
-def impact(dur=0.7):
+        p = i / n; fc = f0 * (f1 / f0) ** (p ** curve)
+        w0 = 2 * math.pi * min(fc, SR * 0.45) / SR; al = math.sin(w0) / (2 * q)
+        a0 = 1 + al; x0 = noise[i]
+        y0 = (al * x0 - al * x2 + 2 * math.cos(w0) * y1 - (1 - al) * y2) / a0
+        x2, x1, y2, y1 = x1, x0, y1, y0; out[i] = y0
+    return out
+def reverb(st, wet=0.22, size=1.1):
+    n = int(SR * size); tt = np.arange(n) / SR
+    outs = []
+    for ch, seed in ((0, 1), (1, 2)):
+        ir = np.random.default_rng(seed).standard_normal(n) * np.exp(-tt * 5.5); ir /= np.sqrt(np.sum(ir ** 2))
+        x = st[:, ch]; L = len(x) + n
+        y = np.fft.irfft(np.fft.rfft(x, L) * np.fft.rfft(ir, L), L)
+        outs.append(np.concatenate([x, np.zeros(n)]) * (1 - wet) + y * wet * 2.2)
+    return np.stack(outs, 1)
+def pan(x, p0, p1):
+    p = np.linspace(p0, p1, len(x)); ang = (p + 1) * math.pi / 4
+    return np.stack([x * np.cos(ang), x * np.sin(ang)], 1)
+def whoosh(dur, f0, f1, p0=-0.7, p1=0.7, seed=7, wet=0.2):
+    n = int(SR * dur); x = bandsweep(n, f0, f1, seed=seed)
+    env = np.sin(np.linspace(0, math.pi, n)) ** 1.8 * np.linspace(0.6, 1, n)
+    return norm(reverb(pan(norm(x * env), p0, p1), wet))
+def riser(dur=1.2):
     n = int(SR * dur); tt = np.arange(n) / SR
-    f = 70 * np.exp(-tt * 6) + 42
-    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt * 6.5)
-    click = np.random.default_rng(3).standard_normal(n) * np.exp(-tt * 90) * 0.35
-    x = body + click
-    return x / np.max(np.abs(x)) * 0.95
-
-def pop(dur=0.09):
+    noise = bandsweep(n, 400, 6000, q=0.9, curve=1.4, seed=5)
+    tone = np.sin(2 * np.pi * np.cumsum(220 * (4 ** (tt / dur) ** 1.5)) / SR) * 0.35
+    env = (tt / dur) ** 2.2
+    x = norm(noise) * env + tone * env
+    return norm(reverb(pan(x, -0.3, 0.3), 0.3))
+def impact(dur=1.0):
     n = int(SR * dur); tt = np.arange(n) / SR
-    f = 1500 * np.exp(-tt * 18) + 600
-    x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt * 45)
-    return x / np.max(np.abs(x)) * 0.8
-
-def shimmer(dur=1.4):
+    body = np.sin(2 * np.pi * np.cumsum(60 * np.exp(-tt * 7) + 40) / SR) * np.exp(-tt * 5)
+    snap_ = RNG.standard_normal(n) * np.exp(-tt * 60) * 0.4
+    return norm(reverb(np.stack([body + snap_] * 2, 1), 0.25, 1.4), 0.95)
+def tick(dur=0.06):
+    n = int(SR * dur); tt = np.arange(n) / SR
+    x = np.sin(2 * np.pi * 2400 * tt) * np.exp(-tt * 140) + RNG.standard_normal(n) * np.exp(-tt * 400) * 0.3
+    return norm(reverb(np.stack([x] * 2, 1), 0.12, 0.5), 0.8)
+def sparkle(dur=1.3, base=1760.0):
+    n = int(SR * dur); tt = np.arange(n) / SR; L = np.zeros(n); R = np.zeros(n)
+    for k, r in enumerate([1, 1.25, 1.5, 2.0, 2.5]):
+        d0 = int(SR * 0.045 * k); s = tt[: n - d0]
+        tone = np.sin(2 * np.pi * base * r * s) * np.exp(-s * 4.5) * (0.9 - 0.12 * k)
+        (L if k % 2 == 0 else R)[d0:] += tone; (R if k % 2 == 0 else L)[d0:] += tone * 0.5
+    return norm(reverb(np.stack([L, R], 1), 0.3), 0.7)
+def bell(dur=2.2, f=880.0):
     n = int(SR * dur); tt = np.arange(n) / SR; x = np.zeros(n)
-    for k, fr in enumerate([1318.5, 1568.0, 1975.5, 2637.0]):
-        d = int(SR * 0.07 * k); seg = tt[: n - d]
-        x[d:] += np.sin(2 * np.pi * fr * seg) * np.exp(-seg * 3.2) * (0.6 if k else 1)
-    return x / np.max(np.abs(x)) * 0.7
+    for r, a, dcy in ((1, 1, 2.2), (2.0, 0.5, 3), (2.76, 0.35, 4), (5.4, 0.15, 6)):
+        x += np.sin(2 * np.pi * f * r * tt) * a * np.exp(-tt * dcy)
+    x *= np.minimum(1, tt / 0.004)
+    return norm(reverb(np.stack([x] * 2, 1), 0.3, 1.6), 0.75)
 
-save("sfx_whoosh", whoosh()); save("sfx_whoosh_short", whoosh(0.32, 500, 5000))
-save("sfx_impact", impact()); save("sfx_pop", pop()); save("sfx_shimmer", shimmer())
+save("fx_impact", impact()); save("fx_tick", tick()); save("fx_riser", riser())
+save("fx_whoosh_lr", whoosh(0.55, 250, 4500, -0.8, 0.8, 7)); save("fx_whoosh_rl", whoosh(0.55, 250, 4500, 0.8, -0.8, 8))
+save("fx_swish_lr", whoosh(0.32, 900, 7000, -0.5, 0.5, 9, 0.12)); save("fx_swish_rl", whoosh(0.32, 900, 7000, 0.5, -0.5, 10, 0.12))
+save("fx_reveal", whoosh(0.8, 150, 6000, -0.9, 0.9, 12, 0.3)); save("fx_sparkle", sparkle()); save("fx_bell", bell())
 
-# Momentos (no tempo FINAL) e volume em dB abaixo da fala
 seg_start = lambda i: offsets[i]
-SFX = [
-    ("sfx_impact", 0.00, -17),                    # gancho
-    ("sfx_pop", seg_start(1) + 0.05, -20),         # selo PASSO 1
-    ("sfx_whoosh_short", seg_start(3) - 0.16, -22), # entra o zoom nas linhas de expressão
-    ("sfx_pop", seg_start(4) + 0.05, -20),         # selo PASSO 2
-    ("sfx_whoosh_short", seg_start(7) - 0.16, -22), # entra o zoom no iPad
-    ("sfx_whoosh", seg_start(8) + 0.05, -16),      # troca de foto antes → depois
-    ("sfx_whoosh_short", seg_start(13) - 0.16, -22),# zoom final
-    ("sfx_shimmer", out_time(150.28), -21),        # "sem perder a naturalidade"
-    ("sfx_pop", TOTAL - 0.1, -19),                 # entra o card final
-]
 CARD, XF = 3.2, 0.5
 FINAL = TOTAL + CARD - XF
+SFX = [("fx_impact", 0.0, -15), ("fx_swish_lr", 0.0, -22), ("fx_sparkle", out_time(2.3), -24)]
+REVEAL = 8
+for i in range(1, len(SEGMENTS)):
+    if i in (REVEAL, REVEAL + 1):
+        continue
+    moved = SEGMENTS[i][2:5] != SEGMENTS[i - 1][2:5]
+    side = "lr" if i % 2 else "rl"
+    SFX.append((f"fx_whoosh_{side}" if moved else f"fx_swish_{side}", seg_start(i) - 0.22, -21 if moved else -25))
+SFX += [
+    ("fx_riser", seg_start(REVEAL) - 1.15, -23),        # sobe a tensão antes da troca de foto
+    ("fx_reveal", seg_start(REVEAL) + 0.05, -15),       # troca antes → depois
+    ("fx_sparkle", seg_start(REVEAL) + 0.55, -21),
+    ("fx_swish_rl", seg_start(REVEAL + 1) - 0.2, -26),
+    ("fx_tick", seg_start(1) + 0.05, -19), ("fx_tick", seg_start(4) + 0.05, -19), ("fx_tick", seg_start(12) + 0.05, -19),
+    ("fx_swish_lr", seg_start(1) + 0.3, -25),           # lower third
+    ("fx_sparkle", out_time(73.6), -24),                # "fininha"
+    ("fx_sparkle", out_time(132.2), -25),               # "mais aparente"
+    ("fx_sparkle", out_time(150.3), -21),               # "sem perder a naturalidade"
+    ("fx_whoosh_lr", TOTAL - XF - 0.25, -19),           # entra o card final
+    ("fx_bell", TOTAL - XF + 0.15, -19),
+]
+SFX = [s for s in SFX if s[1] is not None]
 
 # ---------- 3. Mixagem de áudio ----------
-inputs = ["-i", f"{OUT}/cut.mov"]
-fc = [f"[0:a]highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=8:release=120:makeup=2,loudnorm=I=-14:TP=-1.5:LRA=9,apad=whole_dur={FINAL:.3f}[voz]"]
+inputs = ["-i", f"{OUT}/cutz.mov"]
+fc = [f"[0:a]highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=8:release=120:makeup=2,loudnorm=I=-15.5:TP=-2:LRA=9,apad=whole_dur={FINAL:.3f}[voz]"]
 mix = ["[voz]"]
 for k, (name, at, db) in enumerate(SFX):
     inputs += ["-i", f"{OUT}/{name}.wav"]
     ms = max(0, int(at * 1000))
     fc.append(f"[{k+1}:a]volume={db}dB,adelay={ms}|{ms}[s{k}]")
     mix.append(f"[s{k}]")
-fc.append("".join(mix) + f"amix=inputs={len(mix)}:normalize=0:duration=first,alimiter=limit=0.89[a]")
+fc.append("".join(mix) + f"amix=inputs={len(mix)}:normalize=0:duration=first,alimiter=limit=0.79:level=false[a]")
 
 # ---------- 4. Legendas e títulos (ASS) ----------
 words = []
