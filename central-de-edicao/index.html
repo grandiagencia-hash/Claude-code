@@ -1,0 +1,972 @@
+<title>Central de Edição Grandi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: barra lateral roxa fixa (no celular vira barra superior rolável) + área de trabalho creme com painéis. */
+:root{
+  --bg:#F7F2E8; --surface:#FFFFFF; --surface-2:#F1EBF8; --sunken:#EEE7DA;
+  --ink:#1D0F33; --muted:#6A5E7D; --line:#E2D8EC; --line-strong:#CDBFE0;
+  --primary:#3E1673; --primary-hover:#4F1F8F; --on-primary:#FFFFFF; --primary-soft:#E9DFF7;
+  --lime:#C9F03D; --on-lime:#1D0F33;
+  --side:#2A0D52; --side-ink:#F4EEE2; --side-muted:#B9A8D6; --side-active:#43207A;
+  --ok:#2F7D4E; --ok-soft:#DDF0E3; --warn:#A86A12; --warn-soft:#F8EAD2; --bad:#C2412B; --bad-soft:#F9E1DB;
+  --b-hook:#C9F03D; --b-ctx:#B9A2E6; --b-dev:#6D3FB8; --b-turn:#E8A33C; --b-cta:#2A0D52;
+  --f-display:"Sora","Segoe UI",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:10px; --r-sm:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#130A1F; --surface:#1C1130; --surface-2:#261842; --sunken:#0F0819;
+  --ink:#F2ECF9; --muted:#A898BF; --line:#33234D; --line-strong:#4A3570;
+  --primary:#B791FF; --primary-hover:#C9ACFF; --on-primary:#140A22; --primary-soft:#2E1D50;
+  --side:#0E0619; --side-ink:#F2ECF9; --side-muted:#9C8BB8; --side-active:#2B1A4A;
+  --ok:#6FD39A; --ok-soft:#173526; --warn:#F0B55A; --warn-soft:#3A2A12; --bad:#FF8A73; --bad-soft:#3E1C17;
+  --b-ctx:#7E62B8; --b-dev:#9D6FF0; --b-cta:#F2ECF9;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#130A1F; --surface:#1C1130; --surface-2:#261842; --sunken:#0F0819;
+  --ink:#F2ECF9; --muted:#A898BF; --line:#33234D; --line-strong:#4A3570;
+  --primary:#B791FF; --primary-hover:#C9ACFF; --on-primary:#140A22; --primary-soft:#2E1D50;
+  --side:#0E0619; --side-ink:#F2ECF9; --side-muted:#9C8BB8; --side-active:#2B1A4A;
+  --ok:#6FD39A; --ok-soft:#173526; --warn:#F0B55A; --warn-soft:#3A2A12; --bad:#FF8A73; --bad-soft:#3E1C17;
+  --b-ctx:#7E62B8; --b-dev:#9D6FF0; --b-cta:#F2ECF9;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--side)}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.75rem;line-height:1.2} h2{font-size:1.2rem} h3{font-size:1rem} h4{font-size:.9rem}
+p{margin:0}
+a{color:var(--primary)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+.side{background:var(--side);color:var(--side-ink);position:sticky;top:env(safe-area-inset-top,0px);height:100vh;display:flex;flex-direction:column;gap:20px;padding:22px 14px 18px max(14px,env(safe-area-inset-left,0px))}
+.brand{display:flex;gap:10px;align-items:center;padding:0 6px}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--lime);color:#1D0F33;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px;flex:none}
+.brand b{font-family:var(--f-display);font-size:15px;display:block;line-height:1.15}
+.brand span{font-size:11px;color:var(--side-muted)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--side-ink);text-decoration:none;font-weight:500;white-space:nowrap}
+.nav a:hover{background:var(--side-active)}
+.nav a[aria-current="page"]{background:var(--side-active);box-shadow:inset 3px 0 0 var(--lime)}
+.nav svg{width:17px;height:17px;flex:none;opacity:.85}
+.side-foot{margin-top:auto;font-size:11.5px;color:var(--side-muted);padding:0 6px;display:flex;flex-direction:column;gap:6px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px;background:var(--side-muted)}
+.dot.on{background:var(--lime)} .dot.warn{background:#F0B55A}
+
+.main{min-width:0;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.head{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between}
+.head .titles{display:flex;flex-direction:column;gap:4px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel.tint{background:var(--surface-2);border-color:transparent}
+.panel-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-strong);background:var(--surface);padding:7px 13px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:var(--primary)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.btn.primary:hover{background:var(--primary-hover)}
+.btn.lime{background:var(--lime);border-color:var(--lime);color:var(--on-lime)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.danger{color:var(--bad);border-color:var(--bad-soft)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn svg{width:15px;height:15px}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:var(--surface-2);color:var(--ink);white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8}
+.st-rascunho{background:var(--sunken);color:var(--muted)}
+.st-em_analise{background:var(--primary-soft);color:var(--primary)}
+.st-em_edicao{background:var(--lime);color:var(--on-lime)}
+.st-revisao{background:var(--warn-soft);color:var(--warn)}
+.st-finalizado{background:var(--ok-soft);color:var(--ok)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:4px;background:var(--sunken);color:var(--muted);font-weight:600}
+.tag.demo{background:var(--lime);color:var(--on-lime)}
+.tag.obs{background:var(--ok-soft);color:var(--ok)} .tag.hip{background:var(--warn-soft);color:var(--warn)} .tag.rec{background:var(--primary-soft);color:var(--primary)} .tag.lim{background:var(--bad-soft);color:var(--bad)}
+
+.banner{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:var(--r);background:var(--surface-2);font-size:13px}
+.banner.warn{background:var(--warn-soft)}
+.banner.bad{background:var(--bad-soft)}
+.banner b{font-weight:600}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-family:var(--f-display);font-size:1.7rem;font-variant-numeric:tabular-nums}
+
+.plist{display:flex;flex-direction:column}
+.pitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:11px 4px;border-top:1px solid var(--line);text-decoration:none;color:inherit;align-items:center}
+.pitem:first-child{border-top:0}
+.pitem:hover .pname{color:var(--primary)}
+.pname{font-weight:600}
+.pmeta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px}
+.empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed var(--line-strong);border-radius:var(--r);display:flex;flex-direction:column;gap:10px;align-items:center}
+
+.shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.shortcut{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);text-decoration:none;color:inherit;cursor:pointer;text-align:left}
+.shortcut:hover{border-color:var(--primary)}
+.shortcut b{font-family:var(--f-display);font-size:14px}
+.shortcut span{font-size:12.5px;color:var(--muted)}
+
+form.fields,.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-size:12px;font-weight:600;color:var(--muted)}
+.f input,.f select,.f textarea{width:100%;background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px}
+.f textarea{min-height:84px;resize:vertical}
+.f textarea.tall{min-height:220px;font-family:var(--f-mono);font-size:12.5px;line-height:1.6}
+.f .hint{font-size:11.5px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+
+.steps{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.steps button{flex:none;border:0;background:none;padding:9px 12px;border-radius:8px 8px 0 0;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer;display:flex;gap:7px;align-items:center;border-bottom:2px solid transparent;margin-bottom:-5px}
+.steps button:hover{color:var(--ink)}
+.steps button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--primary)}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--line-strong)}
+.sdot.done{background:var(--ok)} .sdot.run{background:var(--lime);box-shadow:0 0 0 3px var(--primary-soft)}
+
+.out{display:flex;flex-direction:column;gap:16px}
+.out section{display:flex;flex-direction:column;gap:8px}
+.out ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.out li{max-width:75ch}
+.kv{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);gap:6px 14px}
+.kv dt{font-size:12px;font-weight:600;color:var(--muted)} .kv dd{margin:0}
+.quote{font-family:var(--f-display);font-size:1.05rem;line-height:1.45;border-left:3px solid var(--lime);padding:2px 0 2px 12px}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.opt{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.opt.screen{font-family:var(--f-display);font-weight:700;font-size:15px;line-height:1.2;background:var(--side);color:#fff;border-color:transparent}
+.opt.screen .btn{color:#fff}
+
+.tl-wrap{display:flex;flex-direction:column;gap:6px}
+.tl{display:flex;height:44px;border-radius:8px;overflow:hidden;background:var(--sunken)}
+.tl button{border:0;border-right:2px solid var(--surface);min-width:6px;cursor:pointer;color:#1D0F33;font-size:11px;font-weight:700;padding:0 6px;text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tl button:last-child{border-right:0}
+.tl button:hover{filter:brightness(1.08)}
+.b-gancho{background:var(--b-hook)} .b-contexto{background:var(--b-ctx)} .b-desenvolvimento{background:var(--b-dev);color:#fff!important} .b-virada{background:var(--b-turn)} .b-cta{background:var(--b-cta);color:var(--bg)!important}
+.ruler{position:relative;height:16px;font-size:10.5px;color:var(--muted)}
+.ruler span{position:absolute;transform:translateX(-50%)} .ruler span:first-child{transform:none}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+tr.hl td{background:var(--primary-soft)}
+.rt td{min-width:150px} .rt td:first-child,.rt td:nth-child(2){min-width:0}
+tr.done td{opacity:.55}
+
+.scores{display:flex;flex-direction:column;gap:8px}
+.score{display:grid;grid-template-columns:150px minmax(0,1fr) 34px;gap:10px;align-items:center}
+.bar{height:10px;border-radius:5px;background:var(--sunken);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--primary);border-radius:5px}
+.bar i.hi{background:var(--ok)} .bar i.lo{background:var(--bad)}
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.check:first-child{border-top:0}
+.check input{margin-top:3px;width:16px;height:16px;accent-color:var(--primary)}
+.okmark{font-weight:700} .okmark.y{color:var(--ok)} .okmark.n{color:var(--bad)}
+
+.files{display:flex;flex-direction:column;gap:10px}
+.file{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
+.file-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.specs{display:flex;flex-wrap:wrap;gap:6px}
+.spec{font-size:12px;background:var(--surface-2);padding:3px 8px;border-radius:5px}
+.spec b{font-weight:600}
+.frames{display:flex;gap:6px;overflow-x:auto}
+.frames figure{margin:0;flex:none;display:flex;flex-direction:column;gap:2px;font-size:10.5px;color:var(--muted)}
+.frames img{height:96px;border-radius:5px;display:block;background:var(--sunken)}
+.silence{position:relative;height:14px;border-radius:4px;background:var(--primary-soft);overflow:hidden}
+.silence i{position:absolute;top:0;bottom:0;background:var(--bad)}
+.drop{border:1.5px dashed var(--line-strong);border-radius:var(--r);padding:20px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;background:var(--surface)}
+.drop.over{border-color:var(--primary);background:var(--primary-soft)}
+
+.running{display:flex;gap:12px;align-items:center;padding:14px;border-radius:var(--r);background:var(--surface-2)}
+.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--line-strong);border-top-color:var(--primary);animation:sp 0.9s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-size:13px;max-width:min(420px,calc(100vw - 32px));z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.modal-bg{position:fixed;inset:0;background:rgba(15,6,25,.55);z-index:40;display:grid;place-items:center;padding:16px}
+.modal{background:var(--surface);border-radius:var(--r);padding:18px;width:min(760px,100%);max-height:86vh;display:flex;flex-direction:column;gap:12px}
+.modal textarea{width:100%;flex:1;min-height:320px;font-family:var(--f-mono);font-size:12px;background:var(--sunken);border:1px solid var(--line);border-radius:8px;padding:10px}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:12.5px}
+
+.ccard{display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.ccard h3{font-size:15px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters select,.filters input{background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:6px 9px}
+
+@media (max-width:980px){
+  .shortcuts,.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;z-index:20;flex-direction:row;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));overflow-x:auto}
+  .brand span,.side-foot{display:none}
+  .nav{flex-direction:row}
+  .nav a{padding:7px 9px} .nav a span{display:none} .nav a[aria-current="page"]{box-shadow:inset 0 -2px 0 var(--lime)}
+  .grid2,.grid3,form.fields,.fields{grid-template-columns:minmax(0,1fr)}
+  .main{padding-block:18px 48px}
+  h1{font-size:1.4rem}
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .score{grid-template-columns:110px minmax(0,1fr) 30px}
+}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="brand-mark" aria-hidden="true">g</div><div><b>Central de Edição</b><span>Grandi Agência</span></div></div>
+    <nav class="nav" id="nav" aria-label="Seções"></nav>
+    <div class="side-foot" id="sideFoot"></div>
+  </aside>
+  <main class="main"><div class="wrap" id="view"></div></main>
+</div>
+<div id="toastHost"></div>
+<div id="modalHost"></div>
+<input type="file" id="importInput" accept="application/json,.json" hidden>
+
+<script>
+"use strict";
+/* ================= Utilidades ================= */
+const $ = (s, r=document) => r.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const clone = o => JSON.parse(JSON.stringify(o ?? null));
+const fmtDate = t => t ? new Date(t).toLocaleDateString("pt-BR",{day:"2-digit",month:"short"}) : "—";
+const fmtDateTime = t => t ? new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "—";
+const fmtSec = s => { if(!isFinite(s)) return "—"; s=Math.max(0,s); const m=Math.floor(s/60), r=s-m*60; return String(m).padStart(2,"0")+":"+r.toFixed(1).padStart(4,"0"); };
+const fmtBytes = b => b>=1e9 ? (b/1e9).toFixed(2)+" GB" : b>=1e6 ? (b/1e6).toFixed(0)+" MB" : Math.round(b/1e3)+" KB";
+const arr = v => Array.isArray(v) ? v : [];
+function toast(msg){ const h=$("#toastHost"); h.innerHTML=`<div class="toast" role="status">${esc(msg)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>h.innerHTML="",4200); }
+const I = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+  film:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.7 2.6 3 5.2"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  db:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M6 11l6 6 6-6M4 20h16"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg>',
+  redo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.7L20 8.5M20 3v5.5h-5.5"/></svg>'
+};
+
+/* ================= Constantes editoriais ================= */
+const STATUS = [["rascunho","Rascunho"],["em_analise","Em análise"],["em_edicao","Em edição"],["revisao","Em revisão"],["finalizado","Finalizado"]];
+const statusLabel = k => (STATUS.find(s=>s[0]===k)||STATUS[0])[1];
+const PLATFORMS = ["Instagram Reels","Instagram Stories","TikTok","YouTube Shorts","YouTube","LinkedIn","X"];
+const FORMATS = ["Reels","Stories","TikTok","Shorts","YouTube","LinkedIn","X"];
+const CONTENT_TYPES = ["Conteúdo institucional","Conteúdo educativo","Conteúdo de autoridade","Conteúdo comercial","Conteúdo de bastidores","Conteúdo de experiência","Conteúdo de entretenimento","Depoimento","Storytelling","Cobertura de evento","UGC","Vídeo de produto ou serviço"];
+const REF_KINDS = ["Visual","Ritmo","Legenda","Trilha","Estrutura","Cor","Formato","Outro"];
+const PLATFORM_GUIDE = {
+  "Instagram Reels":"Priorizar gancho, clareza, identidade visual, retenção e compartilhamento. Ritmo rápido, 9:16, legenda fora dos 20% inferiores.",
+  "Instagram Stories":"Priorizar naturalidade, sequência, proximidade, bastidores e interação (enquetes, caixas). Telas de até 15 s.",
+  "TikTok":"Priorizar descoberta, espontaneidade, ritmo e identificação com o público. Ritmo muito rápido.",
+  "YouTube Shorts":"Priorizar gancho imediato, narrativa objetiva e conclusão satisfatória que funcione em loop.",
+  "YouTube":"Permitir desenvolvimento de raciocínio, storytelling, contexto e construção de autoridade. 16:9.",
+  "LinkedIn":"Priorizar clareza, credibilidade, conhecimento e linguagem profissional. Legendas sempre (consumo sem som).",
+  "X":"Priorizar uma ideia central forte, velocidade e impacto imediato."
+};
+const QC_MANUAL = ["O gancho é forte?","A mensagem está clara?","A narrativa tem progressão?","Não existe trecho dispensável?","O ritmo está adequado?","As imagens complementam a fala?","As legendas estão legíveis?","O áudio está equilibrado?","A edição respeita a identidade do cliente?","O CTA faz sentido?","O vídeo entrega o que promete?"];
+const SCORE_LABELS = {gancho:"Gancho",retencao:"Retenção potencial",clareza:"Clareza",ritmo:"Ritmo",narrativa:"Qualidade narrativa",plataforma:"Adequação à plataforma",marca:"Coerência com a marca"};
+const BLOCKS = {gancho:"Gancho",contexto:"Contexto",desenvolvimento:"Desenvolvimento",virada:"Virada",cta:"CTA"};
+
+/* Etapas de inteligência: cada uma é uma chamada real ao Claude com saída JSON. */
+const STEPS = {
+  diag:{label:"Diagnóstico",needs:[],tier:"complex",
+    ask:"ETAPA: DIAGNÓSTICO DO MATERIAL (Etapa A — análise narrativa). Entenda a história inteira antes de qualquer corte. Se houver vários arquivos, avalie cada um e se formam uma narrativa única. Se houver imagens anexadas (quadros extraídos dos vídeos), descreva somente o que é visível nelas e use isso para avaliar enquadramento, luz, cor e composição; não suponha o que acontece entre os quadros.",
+    schema:`{"resumo":"o que acontece no vídeo","assunto":"","mensagem_central":"","melhores_momentos":[{"ref":"tempo ou trecho de fala","motivo":""}],"dispensaveis":[{"ref":"","motivo":""}],"repeticoes":[""],"perda_ritmo":[{"ref":"","motivo":""}],"momentos_emocionais":[""],"vicios":[""],"erros":[""],"potencial_retencao":{"nota":0,"justificativa":""},"melhor_narrativa":"","observacoes_visuais":[""],"fatos":["fatos observados no material"],"hipoteses":["hipóteses, claramente não confirmadas"],"limitacoes":["o que não foi possível analisar e o que pedir à equipe"],"multivideo":{"usar":[{"arquivo":"","motivo":""}],"descartar":[{"arquivo":"","motivo":""}],"combinacao":""}}`},
+  narr:{label:"Narrativa e ganchos",needs:["diag"],tier:"default",
+    ask:"ETAPA: REESTRUTURAÇÃO E GANCHOS (Etapa B). Avalie se a ordem original é a melhor (começar pelo resultado, pela pergunta, por afirmação forte, por trecho de maior impacto, quebra de expectativa, antecipar informação, curiosidade). Só reordene se melhorar compreensão ou interesse. Ganchos falados devem usar falas que EXISTEM no material (ou indicar claramente que é uma regravação sugerida). Textos de tela: curtos, no máximo duas linhas, sem promessa falsa ou sensacionalismo.",
+    schema:`{"conceito":"conceito criativo em uma frase","ganchos_falados":["5 opções"],"textos_abertura":["5 opções, máximo 2 linhas"],"estruturas":[{"nome":"","sequencia":"","quando_usar":""}],"estrutura_recomendada":"","reordenacoes":[{"de":"tempo/trecho original","para":"posição na timeline final","motivo":""}]}`},
+  roteiro:{label:"Roteiro e timeline",needs:["diag","narr"],tier:"complex",
+    ask:"ETAPA: ROTEIRO DE EDIÇÃO PROFISSIONAL (Etapas C e D). Gere a timeline final na ordem de exibição. Cada linha diferencia tempo original do arquivo e tempo estimado na timeline final. Se não houver timecodes confiáveis, use referências de fala/cena e marque 'estimado'. 'audio' traz a fala exata (indique vícios removidos). Detalhe o suficiente para a editora executar sem adivinhar. Cada linha deve responder: existe um motivo para o espectador continuar assistindo? Liste também cortes, B-roll (priorize material gravado) e direção de legendas. 'bloco' deve ser um de: gancho, contexto, desenvolvimento, virada, cta. 'dur_s' é a duração estimada em segundos (número).",
+    schema:`{"duracao_final_estimada":"","timecodes_confiaveis":true,"linhas":[{"id":"r1","tempo_original":"","tempo_final":"0:00–0:03","dur_s":3,"bloco":"gancho","audio":"","acao":"","imagem":"","texto":"","efeito":"","som":"","objetivo":""}],"cortes":[{"trecho":"","motivo":""}],"broll":[{"momento":"","o_que":"","por_que":"","fonte":"material gravado | gravar | tela | gráfico"}],"legendas":{"estilo":"","regras":[""],"destaques":["palavras-chave"],"exemplo":["linhas de legenda de exemplo"]}}`},
+  tecnica:{label:"Som, imagem e exportação",needs:["roteiro"],tier:"default",
+    ask:"ETAPA: TRILHA, DESIGN DE SOM, CORREÇÕES E EXPORTAÇÃO. A música nunca compete com a fala. Efeitos com moderação. Use os dados técnicos medidos dos arquivos (resolução, FPS, picos, silêncios) e marque cada correção como 'observado' (vem dos dados/material) ou 'hipotese'. Não prometa recuperar o que não foi gravado. Não recomende 4K ou 60 fps sem justificar pela origem e pela plataforma. Não aplique LUT técnica sem identificar o perfil de origem; HDR/perfil de cor não é identificável no navegador: diga como a equipe confirma no iPhone.",
+    schema:`{"trilha":{"estilo":"","bpm":"","intensidade":"","entradas":[{"momento":"","acao":""}]},"efeitos":[{"momento":"","som":"","motivo":""}],"correcoes_imagem":[{"problema":"","correcao":"","status":"observado|hipotese"}],"correcoes_audio":[{"problema":"","correcao":"","status":"observado|hipotese"}],"exportacao":{"resolucao":"","fps":"","codec":"","bitrate":"","hdr":"","justificativa":""},"verificacoes":[{"item":"","valor":"","fonte":"medido|informado|limitação"}]}`},
+  publi:{label:"Títulos e publicação",needs:["narr"],tier:"default",
+    ask:"ETAPA: PUBLICAÇÃO. 5 títulos, 5 textos de thumbnail com no máximo 4 palavras, legenda/descrição adequada à plataforma (mantendo o CTA e as informações comerciais exatamente como no briefing), hashtags realmente pertinentes (poucas) e adaptações de narrativa para outras plataformas quando fizer sentido (não apenas redimensionar).",
+    schema:`{"titulos":[""],"thumbs":[""],"descricao":"","hashtags":["#..."],"versoes":[{"plataforma":"","ajustes":""}]}`},
+  qc:{label:"Controle de qualidade",needs:["roteiro"],tier:"default",
+    ask:"ETAPA: CONTROLE DE QUALIDADE do roteiro proposto. Notas de 0 a 10 são avaliações editoriais, não métricas reais. Seja exigente: aponte problemas reais com ajustes concretos.",
+    schema:`{"notas":{"gancho":0,"retencao":0,"clareza":0,"ritmo":0,"narrativa":0,"plataforma":0,"marca":0},"checklist":[{"pergunta":"","ok":true,"comentario":""}],"ajustes_prioritarios":[""]}`},
+  capcut:{label:"Guia CapCut",needs:["roteiro","tecnica"],tier:"default",
+    ask:"ETAPA: GUIA DE EXECUÇÃO NO CAPCUT. Versão resumida, prática e em ordem, para a editora aplicar o roteiro no CapCut (nomes de ferramentas do CapCut em português: Dividir, Velocidade, Escala, Legendas automáticas, Normalizar volume, Ajustar, Exportar). Inclua tempos.",
+    schema:`{"passos":[{"etapa":"","instrucao":""}]}`}
+};
+const STEP_ORDER = ["diag","narr","roteiro","tecnica","publi","qc","capcut"];
+const BASE_RULES = `Você é a diretora de edição, estrategista audiovisual e supervisora de qualidade da Grandi Agência. Princípio da agência: "Marketing com intenção". A linguagem audiovisual deve transmitir profissionalismo, criatividade, sofisticação, clareza, intencionalidade, modernidade, naturalidade, autoridade e identidade de marca. Aplique princípios de retenção, storytelling, clareza e ritmo visual (como os estudados em MrBeast, Ali Abdaal, Colin & Samir, Vox e MKBHD) sem copiar mecanicamente nenhum estilo.
+Equipamento padrão da Grandi: iPhone 18 Pro, microfone de lapela quando disponível, CapCut e Lightroom.
+REGRAS INEGOCIÁVEIS: nunca invente falas, cenas, imagens ou informações que não estejam no material; cite falas como estão na transcrição; nunca recomende cortes sem considerar o contexto; nunca confunda velocidade com qualidade; nunca adicione efeitos sem função; preserve pausas que dão naturalidade, emoção, humor ou credibilidade; nunca corte palavras de modo que mude o sentido; nunca descaracterize a identidade do cliente; nunca altere informações comerciais ou técnicas; diferencie fatos observados, hipóteses e recomendações; aponte limitações quando faltar material; não sugira imagem de banco quando o material gravado resolve; nunca substitua cenas reais por imagens artificiais. Não aplicar nitidez excessiva, granulação artificial, filtros que destruam tons de pele ou saturação indiscriminada.
+Pergunta que orienta toda decisão: essa escolha melhora a experiência de quem assiste e fortalece o objetivo do conteúdo?
+Escreva em português do Brasil, de forma direta e específica para este material.`;
+
+/* ================= Estado e armazenamento ================= */
+const S = { mode:"connecting", projects:{}, clients:{}, refs:{}, db:null, sample:null, limits:null, downloads:null,
+  running:{}, frames:{}, draft:{}, tab:{}, analyzing:{}, confirm:null, hl:null, filter:{status:"",client:"",q:""}, refFilter:"", editClient:null, editRef:null };
+const COLS = ["projects","clients","refs"];
+const LS_KEY = "grandi-central-v1";
+function loadLocal(){ try{ const j=JSON.parse(localStorage.getItem(LS_KEY)||"null"); if(j){ COLS.forEach(c=>S[c]=j[c]||{}); } }catch(e){} }
+function saveLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({projects:S.projects,clients:S.clients,refs:S.refs})); }catch(e){ toast("O navegador não deixou salvar localmente. Exporte um backup para não perder os dados."); } }
+const wq = {}; const DEL = Symbol("del");
+function queueWrite(path, data){ const q = wq[path] || (wq[path]={busy:false,next:null}); q.next=data; if(!q.busy) drain(path); }
+async function drain(path){ const q=wq[path]; q.busy=true; while(q.next){ const d=q.next; q.next=null; try{ if(d===DEL) await S.db.doc(path).delete(); else await S.db.doc(path).set(d); }catch(e){ toast(e && e.code==="not_granted" ? "Você tem acesso só de leitura: a alteração não foi salva." : "Não foi possível salvar ("+(e&&e.code||"erro")+"). Tente de novo."); } } q.busy=false; }
+function put(col, obj){ obj.updatedAt = Date.now(); const c=clone(obj); S[col][obj.id]=c; if(S.mode==="db") queueWrite(col+"/"+obj.id, clone(c)); else saveLocal(); render(); }
+function remove(col, id){ delete S[col][id]; if(S.mode==="db") queueWrite(col+"/"+id, DEL); else saveLocal(); render(); }
+const P = id => S.projects[id];
+const clientName = id => (S.clients[id]||{}).name || "Sem cliente";
+const byUpdated = (a,b) => (b.updatedAt||0)-(a.updatedAt||0);
+function normProject(p){ p.material = p.material || {}; p.material.files = arr(p.material.files); p.steps=p.steps||{}; p.history=arr(p.history); p.done=p.done||{}; p.qcManual=p.qcManual||{}; return p; }
+
+/* ================= Rascunhos de formulário (sobrevivem a atualizações em tempo real) ================= */
+function dv(form, field, fallback){ const d=S.draft[form]; return d && field in d ? d[field] : (fallback ?? ""); }
+document.addEventListener("input", e => { const b=e.target.dataset && e.target.dataset.bind; if(!b) return; const [form, field]=b.split("."); (S.draft[form] ||= {})[field]=e.target.value; });
+document.addEventListener("change", e => { const b=e.target.dataset && e.target.dataset.bind; if(!b) return; const [form, field]=b.split("."); (S.draft[form] ||= {})[field]=e.target.value; });
+
+/* ================= Navegação ================= */
+const NAV = [["painel","Painel",I.home],["novo","Novo projeto",I.plus],["projetos","Projetos",I.film],["clientes","Clientes",I.users],["referencias","Referências",I.book],["historico","Histórico",I.clock],["dados","Dados e backup",I.db]];
+function route(){ const h=(location.hash||"#painel").slice(1); if(h.startsWith("p-")) return {view:"projeto", id:h.slice(2)}; return {view: NAV.some(n=>n[0]===h) ? h : "painel"}; }
+window.addEventListener("hashchange", ()=>{ S.confirm=null; render(); window.scrollTo(0,0); });
+function go(h){ if(location.hash==="#"+h) render(); else location.hash=h; }
+
+function renderNav(){
+  const r=route(); const cur = r.view==="projeto" ? "projetos" : r.view;
+  $("#nav").innerHTML = NAV.map(([k,l,ic])=>`<a href="#${k}" ${k===cur?'aria-current="page"':''}>${ic}<span>${l}</span></a>`).join("");
+  const modeTxt = S.mode==="db" ? '<span><i class="dot on"></i>Dados compartilhados com a equipe</span>' : S.mode==="local" ? '<span><i class="dot warn"></i>Dados só neste navegador</span>' : '<span><i class="dot"></i>Conectando…</span>';
+  const aiTxt = S.sample ? '<span><i class="dot on"></i>Análise com Claude disponível</span>' : '<span><i class="dot"></i>Análise com Claude indisponível</span>';
+  $("#sideFoot").innerHTML = modeTxt + aiTxt + '<span style="margin-top:6px">Marketing com intenção.</span>';
+}
+
+let renderPending=false;
+function render(){
+  const a=document.activeElement;
+  if(a && a.dataset && a.dataset.bind && a.closest("#view") && !render.force){ renderPending=true; return; }
+  render.force=false; renderPending=false;
+  renderNav();
+  const r=route(); const v=$("#view"); const y=window.scrollY;
+  const views={painel:vPainel,novo:vNovo,projetos:vProjetos,clientes:vClientes,referencias:vRefs,historico:vHistorico,dados:vDados,projeto:()=>vProjeto(r.id)};
+  v.innerHTML=(views[r.view]||vPainel)();
+  window.scrollTo(0,y);
+}
+document.addEventListener("focusout", ()=>setTimeout(()=>{ if(renderPending){ const a=document.activeElement; if(!(a&&a.dataset&&a.dataset.bind)) render(); } },0));
+
+/* ================= Componentes ================= */
+const pill = st => `<span class="pill st-${esc(st||"rascunho")}">${esc(statusLabel(st))}</span>`;
+const demoTag = o => o && o.demo ? ' <span class="tag demo">DEMO</span>' : "";
+function modeBanner(){
+  if(S.mode==="local") return `<div class="banner warn"><div><b>Os dados estão salvos só neste navegador.</b> Esta visualização não tem acesso ao banco compartilhado da equipe (por exemplo, fora do Claude ou sem login). Use <a href="#dados">Dados e backup</a> para exportar e importar projetos.</div></div>`;
+  if(S.mode==="connecting") return `<div class="banner"><div class="spin"></div><div>Conectando ao banco de projetos da equipe…</div></div>`;
+  return "";
+}
+function projectItem(p){
+  return `<a class="pitem" href="#p-${esc(p.id)}"><div class="stack" style="gap:3px;min-width:0"><span class="pname">${esc(p.name||"Sem nome")}${demoTag(p)}</span>
+  <span class="pmeta"><span>${esc(clientName(p.clientId))}</span><span>${esc(p.platform||"—")}</span><span>${esc(p.format||"—")}</span><span>${esc(p.objective||"")}</span></span></div>${pill(p.status)}</a>`;
+}
+function field(label, bind, value, opts={}){
+  const id="f-"+bind.replace(".","-"); const full=opts.full?" full":"";
+  let ctl;
+  if(opts.options) ctl=`<select id="${id}" data-bind="${bind}">${opts.blank!==false?`<option value="">${esc(opts.blank||"Selecione")}</option>`:""}${opts.options.map(o=>{const [v,l]=Array.isArray(o)?o:[o,o];return `<option value="${esc(v)}" ${String(v)===String(value)?"selected":""}>${esc(l)}</option>`}).join("")}</select>`;
+  else if(opts.area) ctl=`<textarea id="${id}" data-bind="${bind}" class="${opts.tall?"tall":""}" placeholder="${esc(opts.ph||"")}">${esc(value)}</textarea>`;
+  else ctl=`<input id="${id}" data-bind="${bind}" value="${esc(value)}" placeholder="${esc(opts.ph||"")}" ${opts.req?"required":""}>`;
+  return `<div class="f${full}"><label for="${id}">${esc(label)}</label>${ctl}${opts.hint?`<span class="hint">${esc(opts.hint)}</span>`:""}</div>`;
+}
+function confirmBtn(key, label, action){
+  if(S.confirm===key) return `<span class="confirm">Tem certeza? <button class="btn sm danger" data-act="${action}">Sim, ${esc(label.toLowerCase())}</button><button class="btn sm ghost" data-act="cancelConfirm">Cancelar</button></span>`;
+  return `<button class="btn sm danger" data-act="askConfirm" data-key="${esc(key)}">${esc(label)}</button>`;
+}
+
+/* ================= Painel ================= */
+function vPainel(){
+  const ps=Object.values(S.projects).map(normProject).sort(byUpdated);
+  const ativos=ps.filter(p=>p.status!=="finalizado"), fin=ps.filter(p=>p.status==="finalizado");
+  const roteiros=ps.reduce((n,p)=>n+(p.steps.roteiro?1:0),0);
+  const latest=ativos[0];
+  const hasDemo=[...ps,...Object.values(S.clients)].some(o=>o.demo);
+  const empty = ps.length===0 && S.mode!=="connecting";
+  return `${modeBanner()}
+  <div class="head"><div class="titles"><span class="eyebrow">Grandi Agência</span><h1>Central de Edição Grandi</h1><p class="muted">Análise, direção e planejamento de edição. Marketing com intenção.</p></div>
+  <div class="row"><a class="btn primary" href="#novo">${I.plus}Novo projeto</a></div></div>
+  ${hasDemo?`<div class="banner"><span class="tag demo">DEMO</span><div>Itens marcados como <b>DEMO</b> são dados demonstrativos fictícios para mostrar o fluxo. Você pode apagá-los em <a href="#dados">Dados e backup</a>.</div></div>`:""}
+  ${empty?`<div class="empty"><h3>Nenhum projeto ainda</h3><p>Crie o primeiro projeto ou carregue um exemplo completo (marcado como DEMO) para conhecer a plataforma.</p><div class="row"><a class="btn primary" href="#novo">Novo projeto</a><button class="btn" data-act="loadDemo">Carregar dados demonstrativos</button></div></div>`:""}
+  <div class="kpis">
+    <div class="kpi"><span class="eyebrow">Em andamento</span><b>${ativos.length}</b></div>
+    <div class="kpi"><span class="eyebrow">Finalizados</span><b>${fin.length}</b></div>
+    <div class="kpi"><span class="eyebrow">Clientes</span><b>${Object.keys(S.clients).length}</b></div>
+    <div class="kpi"><span class="eyebrow">Roteiros gerados</span><b>${roteiros}</b></div>
+  </div>
+  <div class="shortcuts">
+    <button class="shortcut" data-act="quickAnalyze" ${latest?"":"disabled"}><b>Analisar material</b><span>${latest?`Abrir o material de “${esc(latest.name)}”`:"Crie um projeto primeiro"}</span></button>
+    <a class="shortcut" href="#clientes"><b>Biblioteca de clientes</b><span>${Object.keys(S.clients).length} cliente(s) com tom e identidade</span></a>
+    <a class="shortcut" href="#referencias"><b>Biblioteca de referências</b><span>${Object.keys(S.refs).length} referência(s) de ritmo, legenda e trilha</span></a>
+    <a class="shortcut" href="#historico"><b>Histórico de roteiros</b><span>Tudo o que já foi gerado, por data</span></a>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Projetos recentes</h2><a class="btn sm ghost" href="#projetos">Ver todos</a></div>
+    ${ps.length?`<div class="plist">${ps.slice(0,5).map(projectItem).join("")}</div>`:`<p class="muted">Os projetos aparecem aqui assim que forem criados.</p>`}</div>
+  <div class="grid2">
+    <div class="panel"><div class="panel-h"><h2>Em andamento</h2><span class="muted small">${ativos.length}</span></div>${ativos.length?`<div class="plist">${ativos.map(projectItem).join("")}</div>`:`<p class="muted">Nada em andamento.</p>`}</div>
+    <div class="panel"><div class="panel-h"><h2>Finalizados</h2><span class="muted small">${fin.length}</span></div>${fin.length?`<div class="plist">${fin.map(projectItem).join("")}</div>`:`<p class="muted">Nenhum projeto finalizado.</p>`}</div>
+  </div>`;
+}
+
+/* ================= Novo projeto / briefing ================= */
+function briefingFields(form, p){
+  const v=(k,d)=>dv(form,k,p?p[k]:d);
+  const clientOpts=Object.values(S.clients).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>[c.id,c.name]);
+  const ct=v("contentType","");
+  return `<form class="fields" data-form="${form}">
+    ${field("Nome do projeto","%.name".replace("%",form),v("name",""),{ph:"Ex.: Lançamento da coleção de verão",req:true})}
+    ${field("Cliente",form+".clientId",v("clientId",""),{options:clientOpts,blank:clientOpts.length?"Selecione o cliente":"Cadastre um cliente em Clientes",hint:"O tom e a identidade do cliente entram na análise."})}
+    ${field("Segmento do cliente",form+".segment",v("segment",""),{ph:"Ex.: Clínica odontológica"})}
+    ${field("Objetivo do vídeo",form+".objective",v("objective",""),{ph:"Ex.: Gerar agendamentos de avaliação"})}
+    ${field("Plataforma de destino",form+".platform",v("platform","Instagram Reels"),{options:PLATFORMS,blank:false})}
+    ${field("Formato",form+".format",v("format","Reels"),{options:FORMATS,blank:false})}
+    ${field("Duração desejada",form+".duration",v("duration",""),{ph:"Ex.: 30 a 45 s"})}
+    ${field("Público-alvo",form+".audience",v("audience",""),{ph:"Quem precisa assistir até o fim?"})}
+    ${field("Tom de comunicação",form+".tone",v("tone",""),{ph:"Ex.: Próximo, especialista, leve"})}
+    ${field("CTA desejado",form+".cta",v("cta",""),{ph:"Ex.: Link na bio para agendar",hint:"Usado exatamente como escrito."})}
+    <div class="f full"><label>Tipo de conteúdo</label><div class="chips" role="group" aria-label="Tipo de conteúdo">${CONTENT_TYPES.map(t=>`<button type="button" class="chip" aria-pressed="${t===ct}" data-act="pickType" data-form="${form}" data-val="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
+    ${field("Referências visuais",form+".refsText",v("refsText",""),{area:true,full:true,ph:"Links, perfis ou descrição do estilo desejado"})}
+    ${field("Observações adicionais",form+".notes",v("notes",""),{area:true,full:true,ph:"Restrições, aprovações do cliente, prazos"})}
+    ${p?field("Status",form+".status",v("status","rascunho"),{options:STATUS,blank:false}):""}
+  </form>`;
+}
+function vNovo(){
+  return `<div class="head"><div class="titles"><span class="eyebrow">Módulo 1</span><h1>Novo projeto</h1><p class="muted">Cadastre o briefing. Depois você anexa o material e gera a análise.</p></div></div>
+  <div class="panel">${briefingFields("new",null)}
+  <div class="row"><button class="btn primary" data-act="createProject">Criar projeto e anexar material</button><button class="btn ghost" data-act="clearDraft" data-form="new">Limpar campos</button></div></div>`;
+}
+function readForm(form, base){ const d=S.draft[form]||{}; const o=Object.assign({}, base||{}); Object.keys(d).forEach(k=>o[k]=typeof d[k]==="string"?d[k].trim():d[k]); return o; }
+
+/* ================= Lista de projetos ================= */
+function vProjetos(){
+  const f=S.filter; const q=f.q.toLowerCase();
+  const ps=Object.values(S.projects).map(normProject).sort(byUpdated).filter(p=>(!f.status||p.status===f.status)&&(!f.client||p.clientId===f.client)&&(!q||(p.name+" "+clientName(p.clientId)+" "+(p.objective||"")).toLowerCase().includes(q)));
+  return `${modeBanner()}<div class="head"><div class="titles"><span class="eyebrow">Projetos</span><h1>Todos os projetos</h1></div><a class="btn primary" href="#novo">${I.plus}Novo projeto</a></div>
+  <div class="filters"><input id="fq" placeholder="Buscar por nome, cliente ou objetivo" value="${esc(f.q)}" data-filter="q" aria-label="Buscar">
+   <select id="fs" data-filter="status" aria-label="Status"><option value="">Todos os status</option>${STATUS.map(([k,l])=>`<option value="${k}" ${f.status===k?"selected":""}>${l}</option>`).join("")}</select>
+   <select id="fc" data-filter="client" aria-label="Cliente"><option value="">Todos os clientes</option>${Object.values(S.clients).map(c=>`<option value="${esc(c.id)}" ${f.client===c.id?"selected":""}>${esc(c.name)}</option>`).join("")}</select></div>
+  <div class="tablewrap"><table><thead><tr><th>Projeto</th><th>Cliente</th><th>Plataforma</th><th>Formato</th><th>Objetivo</th><th>Etapas</th><th>Status</th><th>Atualizado</th></tr></thead><tbody>
+  ${ps.map(p=>`<tr><td><a href="#p-${esc(p.id)}"><b>${esc(p.name)}</b></a>${demoTag(p)}</td><td>${esc(clientName(p.clientId))}</td><td>${esc(p.platform)}</td><td>${esc(p.format)}</td><td>${esc(p.objective)}</td><td class="mono">${STEP_ORDER.filter(k=>p.steps[k]).length}/7</td><td>${pill(p.status)}</td><td>${fmtDate(p.updatedAt)}</td></tr>`).join("")||`<tr><td colspan="8" class="muted">Nenhum projeto encontrado com esses filtros.</td></tr>`}
+  </tbody></table></div>`;
+}
+document.addEventListener("input", e=>{ const k=e.target.dataset&&e.target.dataset.filter; if(!k) return; S.filter[k]=e.target.value; const pos=e.target.selectionStart; const id=e.target.id; render.force=true; render(); const el=document.getElementById(id); if(el){ el.focus(); if(el.setSelectionRange&&pos!=null) try{el.setSelectionRange(pos,pos)}catch(x){} } });
+
+/* ================= Projeto ================= */
+const TABS = [["briefing","Briefing"],["material","Material"],...STEP_ORDER.map(k=>[k,STEPS[k].label]),["checklist","Checklist"],["entrega","Entrega"]];
+function vProjeto(id){
+  const p=P(id);
+  if(!p) return S.mode==="connecting" ? `<div class="running"><div class="spin"></div>Carregando projeto…</div>` : `<div class="empty"><h3>Projeto não encontrado</h3><p>Ele pode ter sido excluído.</p><a class="btn" href="#projetos">Ver projetos</a></div>`;
+  normProject(p);
+  const tab=S.tab[id]||(p.steps.diag?"roteiro":"material");
+  const tabs=TABS.map(([k,l])=>{ let dot=""; if(STEPS[k]) dot=`<i class="sdot ${S.running[id+":"+k]?"run":p.steps[k]?"done":""}"></i>`; if(k==="material") dot=`<i class="sdot ${(p.material.transcript||p.material.scenes||p.material.files.length)?"done":""}"></i>`; return `<button role="tab" aria-selected="${k===tab}" data-act="tab" data-id="${esc(id)}" data-tab="${k}">${dot}${l}</button>`; }).join("");
+  const body = tab==="briefing"?tBriefing(p): tab==="material"?tMaterial(p): STEPS[tab]?tStep(p,tab): tab==="checklist"?tChecklist(p): tEntrega(p);
+  const pending=STEP_ORDER.filter(k=>!p.steps[k]);
+  const anyRun=STEP_ORDER.some(k=>S.running[id+":"+k]);
+  return `${modeBanner()}<div class="head"><div class="titles"><a href="#projetos" class="small muted" style="text-decoration:none">← Projetos</a><h1>${esc(p.name)}${demoTag(p)}</h1>
+   <div class="pmeta" style="font-size:13px"><span>${esc(clientName(p.clientId))}</span><span>${esc(p.platform)}</span><span>${esc(p.format)}</span><span>${esc(p.contentType||"")}</span>${pill(p.status)}</div></div>
+   <div class="row">
+     <select aria-label="Mudar status" data-act-change="setStatus" data-id="${esc(id)}" class="btn sm">${STATUS.map(([k,l])=>`<option value="${k}" ${p.status===k?"selected":""}>${l}</option>`).join("")}</select>
+     ${pending.length&&!anyRun?`<button class="btn lime" data-act="runPending" data-id="${esc(id)}" ${S.sample?"":"disabled"}>${I.spark}Gerar etapas pendentes (${pending.length})</button>`:""}
+     <button class="btn" data-act="copyScript" data-id="${esc(id)}">${I.copy}Copiar roteiro</button>
+   </div></div>
+   <div class="steps" role="tablist">${tabs}</div>
+   ${body}`;
+}
+function tBriefing(p){
+  const f="b-"+p.id;
+  return `<div class="panel">${briefingFields(f,p)}<div class="row"><button class="btn primary" data-act="saveBriefing" data-id="${esc(p.id)}">Salvar briefing</button><button class="btn ghost" data-act="clearDraft" data-form="${f}">Descartar alterações</button><span style="flex:1"></span>${confirmBtn("delp-"+p.id,"Excluir projeto","deleteProject")}</div></div>`;
+}
+
+/* ---------- Material ---------- */
+function tMaterial(p){
+  const f="m-"+p.id; const m=p.material; const fr=S.frames[p.id]||[];
+  const an=S.analyzing[p.id];
+  return `<div class="grid2" style="align-items:start">
+  <div class="panel"><div class="panel-h"><h2>Texto do material</h2><span class="muted small">Módulo 2</span></div>
+    ${field("Transcrição",f+".transcript",dv(f,"transcript",m.transcript),{area:true,tall:true,full:true,ph:"[00:00–00:06] Fala exata...\n[00:06–00:09] (pausa)\nUse timecodes do arquivo quando tiver.",hint:"Com timecodes, o roteiro sai com tempos exatos. Sem eles, os tempos aparecem como estimativa."})}
+    ${field("Descrição das cenas",f+".scenes",dv(f,"scenes",m.scenes),{area:true,full:true,ph:"Arquivo: o que aparece, enquadramento, luz, som. Liste B-rolls disponíveis."})}
+    ${field("Observações sobre o material",f+".notes",dv(f,"notes",m.notes),{area:true,full:true,ph:"Problemas na gravação, tomadas preferidas pelo cliente..."})}
+    <div class="row"><button class="btn primary" data-act="saveMaterial" data-id="${esc(p.id)}">Salvar material</button></div>
+  </div>
+  <div class="stack">
+  <div class="panel"><div class="panel-h"><h2>Arquivos</h2><span class="muted small">${m.files.length} arquivo(s)</span></div>
+    <label class="drop" id="drop-${esc(p.id)}" data-drop="${esc(p.id)}"><b>Anexar vídeos, áudios ou imagens</b><span class="muted small">Arraste aqui ou clique. Os arquivos ficam no seu computador; a central lê os dados técnicos no navegador.</span>
+      <input type="file" multiple accept="video/*,audio/*,image/*" data-upload="${esc(p.id)}" hidden></label>
+    ${an?`<div class="running"><div class="spin"></div><span>${esc(an)}</span></div>`:""}
+    <div class="banner small"><div><b>O que é medido aqui:</b> resolução, orientação, proporção, duração, FPS (estimado durante a reprodução), picos de áudio, clipping e silêncios com tempo exato. Também extraímos 6 quadros de cada vídeo para o Claude ver.<br><b>O que não é possível:</b> o Claude não assiste ao vídeo inteiro nem ouve o áudio, e o navegador não identifica HDR nem perfil de cor. Para as falas, cole a transcrição (o CapCut gera em Legendas automáticas).</div></div>
+    <div class="files">${m.files.map(x=>fileCard(p,x)).join("")||`<p class="muted small">Nenhum arquivo analisado.</p>`}</div>
+  </div>
+  ${fr.length?`<div class="panel"><div class="panel-h"><h3>Quadros que irão para o diagnóstico</h3><span class="muted small">${fr.length} · só nesta sessão</span></div><div class="frames">${fr.map(x=>`<figure><img src="${x.url}" alt="Quadro de ${esc(x.label)}"><figcaption>${esc(x.label)}</figcaption></figure>`).join("")}</div></div>`:""}
+  </div></div>`;
+}
+function fileCard(p, x){
+  const m=x.meta||{}, a=x.audio;
+  const specs=[];
+  if(m.width) specs.push(["Resolução",m.width+"×"+m.height]);
+  if(m.orientation) specs.push(["Orientação",m.orientation]);
+  if(m.aspect) specs.push(["Proporção",m.aspect]);
+  if(m.duration) specs.push(["Duração",fmtSec(m.duration)]);
+  if(m.fps) specs.push(["FPS",m.fps+(m.fpsEstimated?" (estimado)":"")]);
+  specs.push(["Tamanho",fmtBytes(x.size||0)]);
+  let audio="";
+  if(a){ const dur=m.duration||a.duration||1;
+    audio=`<div class="stack" style="gap:6px"><div class="specs"><span class="spec"><b>Pico</b> ${a.peakDb} dBFS</span><span class="spec"><b>Nível médio da fala</b> ${a.rmsDb} dBFS</span><span class="spec"><b>Clipping</b> ${a.clipped?a.clipped+" amostras":"não detectado"}</span><span class="spec"><b>Silêncios ≥ 0,5 s</b> ${arr(a.silences).length}</span></div>
+    <div class="silence" title="Silêncios em vermelho">${arr(a.silences).map(([s,e])=>`<i style="left:${(s/dur*100).toFixed(2)}%;width:${Math.max(.4,(e-s)/dur*100).toFixed(2)}%"></i>`).join("")}</div>
+    ${arr(a.silences).length?`<details><summary class="small">Ver tempos dos silêncios</summary><p class="mono small">${arr(a.silences).map(([s,e])=>fmtSec(s)+"–"+fmtSec(e)).join(" · ")}</p></details>`:""}</div>`; }
+  else if(x.audioNote) audio=`<p class="small muted">${esc(x.audioNote)}</p>`;
+  return `<div class="file"><div class="file-h"><b style="word-break:break-all">${esc(x.name)}</b><span class="row"><span class="tag">${esc(x.kind)}</span>${confirmBtn("delf-"+x.id,"Remover","removeFile").replace('data-act="removeFile"',`data-act="removeFile" data-id="${esc(p.id)}" data-fid="${esc(x.id)}"`)}</span></div>
+  <div class="specs">${specs.map(([k,v])=>`<span class="spec"><b>${k}</b> ${esc(v)}</span>`).join("")}</div>${audio}</div>`;
+}
+
+/* ---------- Etapas geradas ---------- */
+function tStep(p, key){
+  const st=STEPS[key]; const s=p.steps[key]; const run=S.running[p.id+":"+key];
+  const missing=st.needs.filter(n=>!p.steps[n]);
+  let top;
+  if(run) top=`<div class="running"><div class="spin"></div><div style="flex:1">${run.chars?`Escrevendo ${st.label.toLowerCase()}… <span class="mono">${run.chars}</span> caracteres`:"Pensando… (a primeira resposta pode levar até um minuto)"}</div><button class="btn sm" data-act="stop" data-id="${esc(p.id)}" data-step="${key}">Parar</button></div>`;
+  else top=`<div class="row">${missing.length?`<span class="small muted">Gere antes: ${missing.map(n=>STEPS[n].label).join(", ")}.</span>`:""}
+    <button class="btn ${s?"":"primary"}" data-act="run" data-id="${esc(p.id)}" data-step="${key}" ${(!S.sample||missing.length)?"disabled":""}>${s?I.redo+"Gerar novamente":I.spark+"Gerar "+st.label.toLowerCase()}</button>
+    ${s?`<span class="small muted">Gerado em ${fmtDateTime(s.at)}${s.truncated?" · resposta cortada":""}</span>`:""}
+    ${!S.sample?`<span class="small muted">A análise com Claude só funciona dentro do Claude, com login.</span>`:""}</div>`;
+  const err = S.errors && S.errors[p.id+":"+key];
+  const out = s ? (RENDER[key]||(()=>""))(s.data||{}, p) : `<div class="empty"><p>${esc(st.label)} ainda não foi gerado para este projeto.</p></div>`;
+  return `<div class="panel">${top}${err?`<div class="banner bad">${esc(err)}</div>`:""}<div class="out">${out}</div></div>`;
+}
+const list = (a, f=x=>esc(x)) => arr(a).length ? `<ul>${arr(a).map(x=>`<li>${f(x)}</li>`).join("")}</ul>` : `<p class="muted small">Nada apontado.</p>`;
+const refList = a => list(a, x=>`<b>${esc(x.ref||x.trecho||x.de||"")}</b> — ${esc(x.motivo||"")}`);
+const sec = (t, html, extra="") => `<section><h3>${t}${extra}</h3>${html}</section>`;
+function optCards(items, screen){ return `<div class="opts">${arr(items).map(t=>`<div class="opt ${screen?"screen":""}"><span>${esc(t)}</span><button class="btn sm ghost" data-act="copyText" data-text="${esc(t)}" aria-label="Copiar">${I.copy}</button></div>`).join("")}</div>`; }
+const RENDER = {
+  diag(d){ const pr=d.potencial_retencao||{};
+    return `<section><span class="eyebrow">O que acontece</span><p>${esc(d.resumo)}</p></section>
+    <div class="grid2"><section><span class="eyebrow">Mensagem central</span><p class="quote">${esc(d.mensagem_central)}</p></section>
+      <section><span class="eyebrow">Potencial de retenção (avaliação editorial)</span><div class="score" style="grid-template-columns:minmax(0,1fr) 34px"><div class="bar"><i class="${pr.nota>=8?"hi":pr.nota<5?"lo":""}" style="width:${(+pr.nota||0)*10}%"></i></div><b class="mono">${esc(pr.nota??"—")}</b></div><p class="small muted">${esc(pr.justificativa)}</p></section></div>
+    <div class="grid2">${sec("Melhores momentos",refList(d.melhores_momentos))}${sec("Trechos dispensáveis",refList(d.dispensaveis))}</div>
+    <div class="grid2">${sec("Perda de ritmo",refList(d.perda_ritmo))}${sec("Repetições",list(d.repeticoes))}</div>
+    <div class="grid3">${sec("Momentos emocionais",list(d.momentos_emocionais))}${sec("Vícios de linguagem",list(d.vicios))}${sec("Erros de gravação",list(d.erros))}</div>
+    ${sec("Melhor narrativa possível",`<p>${esc(d.melhor_narrativa)}</p>`)}
+    ${arr(d.observacoes_visuais).length?sec("Observações visuais (quadros)",list(d.observacoes_visuais)):""}
+    <div class="grid3">${sec('<span class="tag obs">Fatos observados</span>',list(d.fatos))}${sec('<span class="tag hip">Hipóteses</span>',list(d.hipoteses))}${sec('<span class="tag lim">Limitações</span>',list(d.limitacoes))}</div>
+    ${d.multivideo&&(arr(d.multivideo.usar).length||arr(d.multivideo.descartar).length)?sec("Modo multivídeo",`<div class="grid2"><div><span class="eyebrow">Usar</span>${list(d.multivideo.usar,x=>`<b>${esc(x.arquivo)}</b> — ${esc(x.motivo)}`)}</div><div><span class="eyebrow">Não usar (o original é preservado)</span>${list(d.multivideo.descartar,x=>`<b>${esc(x.arquivo)}</b> — ${esc(x.motivo)}`)}</div></div><p>${esc(d.multivideo.combinacao)}</p>`):""}`; },
+  narr(d){ return `<section><span class="eyebrow">Conceito criativo</span><p class="quote">${esc(d.conceito)}</p></section>
+    ${sec("5 ganchos falados",optCards(d.ganchos_falados))}
+    ${sec("5 textos de abertura",optCards(d.textos_abertura,true))}
+    ${sec("3 estruturas narrativas",`<div class="grid3">${arr(d.estruturas).map(e=>`<div class="ccard"><h3>${esc(e.nome)}</h3><p>${esc(e.sequencia)}</p><p class="small muted">${esc(e.quando_usar)}</p></div>`).join("")}</div>`)}
+    ${sec("Estrutura recomendada",`<p><span class="tag rec">Recomendação</span> ${esc(d.estrutura_recomendada)}</p>`)}
+    ${sec("Cenas reordenadas",`<div class="tablewrap"><table><thead><tr><th>De (original)</th><th>Para (final)</th><th>Motivo</th></tr></thead><tbody>${arr(d.reordenacoes).map(r=>`<tr><td class="mono">${esc(r.de)}</td><td class="mono">${esc(r.para)}</td><td>${esc(r.motivo)}</td></tr>`).join("")||`<tr><td colspan="3" class="muted">A ordem original foi mantida.</td></tr>`}</tbody></table></div>`)}`; },
+  roteiro(d,p){ const L=arr(d.linhas); const total=L.reduce((n,r)=>n+(+r.dur_s||0),0)||1;
+    let acc=0; const ticks=[]; const step=total>90?15:total>40?10:5; for(let t=0;t<=total;t+=step) ticks.push(t);
+    const doneN=L.filter(r=>p.done[r.id]).length;
+    return `<div class="row" style="justify-content:space-between"><div class="row"><span class="spec"><b>Duração final</b> ${esc(d.duracao_final_estimada)}</span><span class="spec"><b>Timecodes</b> ${d.timecodes_confiaveis?"do arquivo":"estimados"}</span><span class="spec"><b>Executado</b> ${doneN}/${L.length}</span></div>
+      <div class="row"><button class="btn sm" data-act="copyScript" data-id="${esc(p.id)}">${I.copy}Copiar roteiro</button><button class="btn sm" data-act="exportCSV" data-id="${esc(p.id)}">${I.down}Timeline .csv</button></div></div>
+    <div class="tl-wrap"><span class="eyebrow">Timeline final</span>
+      <div class="tl">${L.map(r=>`<button class="b-${esc(r.bloco)}" style="flex:${Math.max(.5,+r.dur_s||1)}" data-act="hlRow" data-row="${esc(r.id)}" title="${esc(r.tempo_final+" · "+(BLOCKS[r.bloco]||r.bloco))}">${esc(r.tempo_final)}</button>`).join("")}</div>
+      <div class="ruler mono">${ticks.map(t=>`<span style="left:${(t/total*100).toFixed(2)}%">${fmtSec(t).slice(0,5).replace(/^00:/,"0:")}</span>`).join("")}</div>
+      <div class="legend">${Object.entries(BLOCKS).map(([k,l])=>`<span><i class="b-${k}"></i>${l}</span>`).join("")}</div></div>
+    <div class="tablewrap"><table class="rt"><thead><tr><th>✓</th><th>Tempo</th><th>Áudio</th><th>Ação</th><th>Imagem</th><th>Texto</th><th>Efeito</th><th>Som</th><th>Objetivo</th></tr></thead><tbody>
+    ${L.map(r=>`<tr id="row-${esc(r.id)}" class="${S.hl===r.id?"hl":""} ${p.done[r.id]?"done":""}"><td><input type="checkbox" aria-label="Trecho executado" data-act-change="toggleDone" data-id="${esc(p.id)}" data-row="${esc(r.id)}" ${p.done[r.id]?"checked":""}></td>
+      <td class="mono" style="min-width:120px"><b>${esc(r.tempo_final)}</b><br><span class="muted">orig. ${esc(r.tempo_original)}</span><br><span class="tag">${esc(BLOCKS[r.bloco]||r.bloco)}</span></td>
+      <td>${esc(r.audio)}</td><td>${esc(r.acao)}</td><td>${esc(r.imagem)}</td><td><b>${esc(r.texto)}</b></td><td>${esc(r.efeito)}</td><td>${esc(r.som)}</td><td class="muted">${esc(r.objetivo)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="grid2">${sec("Cortes e trechos removidos",refList(d.cortes))}${sec("B-roll",list(d.broll,x=>`<b>${esc(x.momento)}</b> · ${esc(x.o_que)} <span class="tag">${esc(x.fonte)}</span><br><span class="muted small">${esc(x.por_que)}</span>`))}</div>
+    ${d.legendas?sec("Direção de legendas",`<p>${esc(d.legendas.estilo)}</p><div class="grid2"><div><span class="eyebrow">Regras</span>${list(d.legendas.regras)}</div><div><span class="eyebrow">Palavras em destaque</span><div class="chips">${arr(d.legendas.destaques).map(w=>`<span class="tag" style="background:var(--lime);color:var(--on-lime)">${esc(w)}</span>`).join("")}</div>${arr(d.legendas.exemplo).length?`<div class="opt screen" style="flex-direction:column;align-items:flex-start;margin-top:10px">${arr(d.legendas.exemplo).map(l=>`<span>${esc(l)}</span>`).join("")}</div>`:""}</div></div>`):""}`; },
+  tecnica(d){ const t=d.trilha||{}, e=d.exportacao||{};
+    const corr = a => list(a,x=>`<span class="tag ${x.status==="observado"?"obs":"hip"}">${x.status==="observado"?"Observado":"Hipótese"}</span> <b>${esc(x.problema)}</b><br>${esc(x.correcao)}`);
+    return `<div class="grid2">${sec("Trilha",`<dl class="kv"><dt>Estilo</dt><dd>${esc(t.estilo)}</dd><dt>BPM</dt><dd>${esc(t.bpm)}</dd><dt>Intensidade</dt><dd>${esc(t.intensidade)}</dd></dl>${list(t.entradas,x=>`<span class="mono">${esc(x.momento)}</span> — ${esc(x.acao)}`)}`)}
+      ${sec("Efeitos sonoros",list(d.efeitos,x=>`<span class="mono">${esc(x.momento)}</span> · <b>${esc(x.som)}</b> — ${esc(x.motivo)}`))}</div>
+    <div class="grid2">${sec("Correções de imagem",corr(d.correcoes_imagem))}${sec("Correções de áudio",corr(d.correcoes_audio))}</div>
+    <div class="grid2">${sec("Exportação recomendada",`<dl class="kv"><dt>Resolução</dt><dd>${esc(e.resolucao)}</dd><dt>FPS</dt><dd>${esc(e.fps)}</dd><dt>Codec</dt><dd>${esc(e.codec)}</dd><dt>Taxa de bits</dt><dd>${esc(e.bitrate)}</dd><dt>HDR</dt><dd>${esc(e.hdr)}</dd></dl><p class="small">${esc(e.justificativa)}</p>`)}
+      ${sec("Verificações técnicas",list(d.verificacoes,x=>`<b>${esc(x.item)}</b>: ${esc(x.valor)} <span class="tag ${x.fonte==="medido"?"obs":x.fonte==="limitação"?"lim":""}">${esc(x.fonte)}</span>`))}</div>`; },
+  publi(d){ return `${sec("5 títulos",optCards(d.titulos))}${sec("5 textos de thumbnail",optCards(d.thumbs,true))}
+    ${sec("Descrição para a plataforma",`<div class="opt" style="white-space:pre-wrap"><span>${esc(d.descricao)}</span><button class="btn sm ghost" data-act="copyText" data-text="${esc(d.descricao)}">${I.copy}</button></div>`)}
+    ${sec("Hashtags",`<div class="row">${arr(d.hashtags).map(h=>`<span class="tag">${esc(h)}</span>`).join("")}<button class="btn sm ghost" data-act="copyText" data-text="${esc(arr(d.hashtags).join(" "))}">${I.copy}Copiar</button></div>`)}
+    ${arr(d.versoes).length?sec("Versões por plataforma",list(d.versoes,x=>`<b>${esc(x.plataforma)}</b> — ${esc(x.ajustes)}`)):""}`; },
+  qc(d){ const n=d.notas||{};
+    return `${sec("Avaliação editorial",`<div class="scores">${Object.entries(SCORE_LABELS).map(([k,l])=>{const v=+n[k]||0;return `<div class="score"><span class="small">${l}</span><div class="bar"><i class="${v>=8?"hi":v<5?"lo":""}" style="width:${v*10}%"></i></div><b class="mono">${v}</b></div>`}).join("")}</div><p class="small muted">Notas de 0 a 10 são avaliações editoriais, não métricas reais de desempenho.</p>`)}
+    ${sec("Revisão do roteiro",`<div>${arr(d.checklist).map(c=>`<div class="check"><span class="okmark ${c.ok?"y":"n"}">${c.ok?"✓":"✕"}</span><div><b>${esc(c.pergunta)}</b><p class="small muted">${esc(c.comentario)}</p></div></div>`).join("")}</div>`)}
+    ${sec("Ajustes prioritários",list(d.ajustes_prioritarios))}`; },
+  capcut(d){ return `<section><span class="eyebrow">Guia de execução no CapCut</span><ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">${arr(d.passos).map(s=>`<li><b>${esc(s.etapa)}</b> — ${esc(s.instrucao)}</li>`).join("")}</ol></section>`; }
+};
+
+function tChecklist(p){
+  const done=QC_MANUAL.filter((_,i)=>p.qcManual[i]).length;
+  return `<div class="panel"><div class="panel-h"><h2>Checklist de qualidade final</h2><span class="spec"><b>${done}</b>/${QC_MANUAL.length}</span></div>
+  <p class="small muted">Marque depois de assistir ao corte final no celular, com e sem som.</p>
+  <div>${QC_MANUAL.map((q,i)=>`<label class="check"><input type="checkbox" data-act-change="toggleQC" data-id="${esc(p.id)}" data-i="${i}" ${p.qcManual[i]?"checked":""}><span>${esc(q)}</span></label>`).join("")}</div>
+  ${done===QC_MANUAL.length&&p.status!=="finalizado"?`<button class="btn lime" data-act="finish" data-id="${esc(p.id)}">Marcar projeto como finalizado</button>`:""}</div>`;
+}
+function tEntrega(p){
+  const have=STEP_ORDER.filter(k=>p.steps[k]);
+  return `<div class="panel"><div class="panel-h"><h2>Entrega final</h2><span class="muted small">${have.length}/7 etapas geradas</span></div>
+  <p>Monta o documento com os 16 itens da entrega da Grandi e o Guia de execução no CapCut, a partir das etapas já geradas. Etapas que ainda não existem aparecem como pendentes.</p>
+  <div class="row"><button class="btn primary" data-act="copyScript" data-id="${esc(p.id)}">${I.copy}Copiar entrega completa</button>
+  <button class="btn" data-act="exportMD" data-id="${esc(p.id)}">${I.down}Exportar .md</button>
+  <button class="btn" data-act="exportCSV" data-id="${esc(p.id)}">${I.down}Timeline .csv</button>
+  <button class="btn" data-act="exportProject" data-id="${esc(p.id)}">${I.down}Backup do projeto .json</button>
+  <button class="btn ghost" data-act="previewMD" data-id="${esc(p.id)}">Ver texto</button></div>
+  <div class="grid3">${STEP_ORDER.map(k=>`<div class="ccard"><span class="row"><i class="sdot ${p.steps[k]?"done":""}"></i><b>${STEPS[k].label}</b></span><span class="small muted">${p.steps[k]?"Gerado em "+fmtDateTime(p.steps[k].at):"Pendente"}</span></div>`).join("")}</div></div>`;
+}
+
+/* ================= Clientes ================= */
+function vClientes(){
+  const cs=Object.values(S.clients).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  const ed=S.editClient; const c=ed&&ed!=="new"?S.clients[ed]:null; const f="c-"+(ed||"x");
+  const v=k=>dv(f,k,c?c[k]:"");
+  return `${modeBanner()}<div class="head"><div class="titles"><span class="eyebrow">Biblioteca</span><h1>Clientes</h1><p class="muted">Tom, público e identidade de cada cliente entram em todas as análises dos projetos dele.</p></div><button class="btn primary" data-act="editClient" data-id="new">${I.plus}Novo cliente</button></div>
+  ${ed?`<div class="panel"><h2>${c?"Editar cliente":"Novo cliente"}</h2><div class="fields">
+    ${field("Nome",f+".name",v("name"),{req:true})}${field("Segmento",f+".segment",v("segment"))}
+    ${field("Tom de comunicação",f+".tone",v("tone"))}${field("Público",f+".audience",v("audience"))}
+    ${field("Identidade visual",f+".identity",v("identity"),{area:true,full:true,ph:"Cores, fontes, estilo de imagem"})}
+    ${field("O que fazer",f+".dos",v("dos"),{area:true})}${field("O que evitar",f+".donts",v("donts"),{area:true})}</div>
+    <div class="row"><button class="btn primary" data-act="saveClient">Salvar cliente</button><button class="btn ghost" data-act="cancelClient">Cancelar</button>${c?`<span style="flex:1"></span>${confirmBtn("delc-"+c.id,"Excluir cliente","deleteClient")}`:""}</div></div>`:""}
+  <div class="grid3">${cs.map(c=>{const n=Object.values(S.projects).filter(p=>p.clientId===c.id).length;return `<div class="ccard"><h3>${esc(c.name)}${demoTag(c)}</h3><span class="small muted">${esc(c.segment)}</span><p class="small"><b>Tom:</b> ${esc(c.tone||"—")}</p><p class="small"><b>Identidade:</b> ${esc(c.identity||"—")}</p><div class="row" style="margin-top:auto"><span class="small muted">${n} projeto(s)</span><span style="flex:1"></span><button class="btn sm" data-act="editClient" data-id="${esc(c.id)}">Editar</button></div></div>`}).join("")||`<div class="empty" style="grid-column:1/-1">Nenhum cliente cadastrado.</div>`}</div>`;
+}
+
+/* ================= Referências ================= */
+function vRefs(){
+  const rf=S.refFilter; const rs=Object.values(S.refs).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).filter(r=>!rf||r.kind===rf);
+  const ed=S.editRef; const r=ed&&ed!=="new"?S.refs[ed]:null; const f="r-"+(ed||"x"); const v=k=>dv(f,k,r?r[k]:"");
+  return `${modeBanner()}<div class="head"><div class="titles"><span class="eyebrow">Biblioteca</span><h1>Referências</h1><p class="muted">Padrões de ritmo, legenda, trilha e estrutura que a equipe quer repetir. As ligadas a um cliente entram na análise dos projetos dele.</p></div><button class="btn primary" data-act="editRef" data-id="new">${I.plus}Nova referência</button></div>
+  ${ed?`<div class="panel"><h2>${r?"Editar referência":"Nova referência"}</h2><div class="fields">
+    ${field("Título",f+".title",v("title"),{req:true})}${field("Tipo",f+".kind",v("kind")||"Visual",{options:REF_KINDS,blank:false})}
+    ${field("Link (opcional)",f+".url",v("url"),{ph:"https://"})}${field("Cliente (opcional)",f+".clientId",v("clientId"),{options:Object.values(S.clients).map(c=>[c.id,c.name]),blank:"Todas as marcas"})}
+    ${field("O que observar",f+".notes",v("notes"),{area:true,full:true})}</div>
+    <div class="row"><button class="btn primary" data-act="saveRef">Salvar referência</button><button class="btn ghost" data-act="cancelRef">Cancelar</button>${r?`<span style="flex:1"></span>${confirmBtn("delr-"+r.id,"Excluir","deleteRef")}`:""}</div></div>`:""}
+  <div class="chips">${["",...REF_KINDS].map(k=>`<button class="chip" aria-pressed="${rf===k}" data-act="refFilter" data-val="${esc(k)}">${k||"Todas"}</button>`).join("")}</div>
+  <div class="grid3">${rs.map(r=>`<div class="ccard"><span class="row"><span class="tag">${esc(r.kind)}</span>${r.demo?'<span class="tag demo">DEMO</span>':""}</span><h3>${esc(r.title)}</h3><p class="small">${esc(r.notes)}</p>
+    <span class="small muted">${r.clientId?esc(clientName(r.clientId)):"Todas as marcas"}</span>
+    <div class="row" style="margin-top:auto">${/^https:\/\//.test(r.url||"")?`<a class="btn sm" href="${esc(r.url)}" target="_blank" rel="noopener">Abrir link</a>`:""}<span style="flex:1"></span><button class="btn sm" data-act="editRef" data-id="${esc(r.id)}">Editar</button></div></div>`).join("")||`<div class="empty" style="grid-column:1/-1">Nenhuma referência ${rf?"deste tipo":""}.</div>`}</div>`;
+}
+
+/* ================= Histórico ================= */
+function vHistorico(){
+  const ev=[]; Object.values(S.projects).forEach(p=>arr(p.history).forEach(h=>ev.push({p,...h})));
+  ev.sort((a,b)=>b.at-a.at);
+  return `${modeBanner()}<div class="head"><div class="titles"><span class="eyebrow">Histórico</span><h1>Histórico de roteiros</h1><p class="muted">Cada etapa gerada ou gerada novamente, em todos os projetos.</p></div></div>
+  <div class="tablewrap"><table><thead><tr><th>Quando</th><th>Projeto</th><th>Cliente</th><th>Etapa</th><th></th></tr></thead><tbody>
+  ${ev.slice(0,300).map(e=>`<tr><td class="mono">${fmtDateTime(e.at)}</td><td><b>${esc(e.p.name)}</b>${demoTag(e.p)}</td><td>${esc(clientName(e.p.clientId))}</td><td>${esc((STEPS[e.step]||{}).label||e.step)}</td><td><button class="btn sm" data-act="openStep" data-id="${esc(e.p.id)}" data-step="${esc(e.step)}">Abrir</button></td></tr>`).join("")||`<tr><td colspan="5" class="muted">Nenhuma etapa gerada ainda.</td></tr>`}
+  </tbody></table></div><p class="small muted">A plataforma guarda a versão mais recente de cada etapa; o histórico registra quando cada uma foi gerada.</p>`;
+}
+
+/* ================= Dados e backup ================= */
+function vDados(){
+  const n={p:Object.keys(S.projects).length,c:Object.keys(S.clients).length,r:Object.keys(S.refs).length};
+  const demoN=COLS.reduce((t,c)=>t+Object.values(S[c]).filter(o=>o.demo).length,0);
+  return `<div class="head"><div class="titles"><span class="eyebrow">Dados</span><h1>Dados e backup</h1></div></div>
+  <div class="grid2" style="align-items:start">
+  <div class="panel"><h2>Onde os dados ficam</h2>
+   ${S.mode==="db"?`<p><span class="tag obs">Banco compartilhado</span> Projetos, clientes e referências ficam salvos no artifact e aparecem para toda a equipe com acesso de edição. Quem tem acesso só de leitura vê tudo, mas não altera.</p>`:`<p><span class="tag hip">Só neste navegador</span> Esta visualização não alcança o banco compartilhado. Os dados ficam no armazenamento deste navegador e podem sumir se o histórico for limpo. Exporte um backup com frequência.</p>`}
+   <p class="small muted">Os arquivos de vídeo, áudio e imagem nunca saem do seu computador e não são guardados. Ficam salvos só os dados técnicos medidos e os resultados das análises. Os quadros extraídos valem só enquanto a página estiver aberta.</p>
+   <dl class="kv"><dt>Projetos</dt><dd class="mono">${n.p}</dd><dt>Clientes</dt><dd class="mono">${n.c}</dd><dt>Referências</dt><dd class="mono">${n.r}</dd></dl></div>
+  <div class="panel"><h2>Exportar e importar</h2>
+   <p>O backup em .json traz projetos, clientes e referências. Importar um backup adiciona os itens e substitui os que têm o mesmo identificador.</p>
+   <div class="row"><button class="btn primary" data-act="exportAll">${I.down}Exportar backup completo</button><button class="btn" data-act="importAll">Importar backup .json</button></div>
+   <hr style="border:0;border-top:1px solid var(--line);width:100%">
+   <h3>Dados demonstrativos</h3>
+   <p class="small">${demoN?`${demoN} item(ns) marcados como DEMO.`:"Nenhum dado demonstrativo carregado."}</p>
+   <div class="row">${demoN?confirmBtn("deldemo","Apagar dados DEMO","deleteDemo"):`<button class="btn" data-act="loadDemo">Carregar dados demonstrativos</button>`}</div></div>
+  </div>`;
+}
+
+/* ================= Ações ================= */
+document.addEventListener("click", async e => {
+  const b=e.target.closest("[data-act]"); if(!b||b.tagName==="SELECT"||b.type==="checkbox") return;
+  const a=b.dataset.act, id=b.dataset.id;
+  const A = {
+    tab(){ S.tab[id]=b.dataset.tab; render.force=true; render(); },
+    askConfirm(){ S.confirm=b.dataset.key; render(); },
+    cancelConfirm(){ S.confirm=null; render(); },
+    clearDraft(){ delete S.draft[b.dataset.form]; render.force=true; render(); },
+    pickType(){ const f=b.dataset.form; (S.draft[f] ||= {}).contentType = b.dataset.val; render.force=true; render(); },
+    createProject(){ const d=readForm("new"); if(!d.name){ toast("Dê um nome ao projeto."); $("#f-new-name")?.focus(); return; }
+      const p=normProject({id:uid(),status:"rascunho",createdAt:Date.now(),platform:"Instagram Reels",format:"Reels",...d});
+      delete S.draft.new; S.tab[p.id]="material"; put("projects",p); go("p-"+p.id); toast("Projeto criado. Agora anexe o material."); },
+    saveBriefing(){ const p=clone(P(id)); const d=readForm("b-"+id,p); if(!d.name){toast("O projeto precisa de um nome.");return;} delete S.draft["b-"+id]; put("projects",d); toast("Briefing salvo."); },
+    saveMaterial(){ const p=clone(P(id)); const d=S.draft["m-"+id]||{}; ["transcript","scenes","notes"].forEach(k=>{ if(k in d) p.material[k]=d[k]; }); delete S.draft["m-"+id]; put("projects",p); toast("Material salvo."); },
+    deleteProject(){ const pid=S.confirm.slice(5); S.confirm=null; remove("projects",pid); delete S.frames[pid]; go("projetos"); toast("Projeto excluído."); },
+    removeFile(){ const p=clone(P(id)); p.material.files=p.material.files.filter(f=>f.id!==b.dataset.fid); S.frames[id]=(S.frames[id]||[]).filter(f=>f.fid!==b.dataset.fid); S.confirm=null; put("projects",p); },
+    run(){ runStep(id,b.dataset.step); },
+    stop(){ const r=S.running[id+":"+b.dataset.step]; r&&r.ctl.abort(); S.stopPipeline=true; },
+    runPending(){ runPending(id); },
+    hlRow(){ S.hl=b.dataset.row; render(); document.getElementById("row-"+b.dataset.row)?.scrollIntoView({behavior:"smooth",block:"center"}); },
+    copyText(){ copy(b.dataset.text); },
+    copyScript(){ copy(buildMD(P(id)), "Roteiro copiado."); },
+    previewMD(){ showText("Entrega · "+P(id).name, buildMD(P(id))); },
+    exportMD(){ save(slug(P(id).name)+"-roteiro.md", buildMD(P(id)), "text/markdown"); },
+    exportCSV(){ const p=P(id); if(!p.steps.roteiro){toast("Gere o roteiro primeiro.");return;} save(slug(p.name)+"-timeline.csv", buildCSV(p), "text/csv"); },
+    exportProject(){ const p=P(id); save(slug(p.name)+"-projeto.json", JSON.stringify({version:1,exportedAt:new Date().toISOString(),projects:[p],clients:p.clientId&&S.clients[p.clientId]?[S.clients[p.clientId]]:[],refs:[]},null,2), "application/json"); },
+    exportAll(){ save("central-edicao-grandi-backup-"+new Date().toISOString().slice(0,10)+".json", JSON.stringify({version:1,exportedAt:new Date().toISOString(),projects:Object.values(S.projects),clients:Object.values(S.clients),refs:Object.values(S.refs)},null,2), "application/json"); },
+    importAll(){ $("#importInput").click(); },
+    loadDemo(){ loadDemo(); },
+    deleteDemo(){ S.confirm=null; COLS.forEach(c=>Object.values(S[c]).filter(o=>o.demo).forEach(o=>remove(c,o.id))); toast("Dados demonstrativos apagados."); },
+    finish(){ const p=clone(P(id)); p.status="finalizado"; put("projects",p); toast("Projeto finalizado."); },
+    quickAnalyze(){ const p=Object.values(S.projects).filter(p=>p.status!=="finalizado").sort(byUpdated)[0]; if(p){ S.tab[p.id]="material"; go("p-"+p.id); } },
+    openStep(){ S.tab[id]=b.dataset.step; go("p-"+id); },
+    editClient(){ S.editClient=id; render.force=true; render(); window.scrollTo(0,0); },
+    cancelClient(){ delete S.draft["c-"+S.editClient]; S.editClient=null; render.force=true; render(); },
+    saveClient(){ const ed=S.editClient; const base=ed!=="new"?clone(S.clients[ed]):{id:uid(),createdAt:Date.now()}; const d=readForm("c-"+ed,base); if(!d.name){toast("Dê um nome ao cliente.");return;} delete S.draft["c-"+ed]; S.editClient=null; put("clients",d); toast("Cliente salvo."); },
+    deleteClient(){ const cid=S.confirm.slice(5); S.confirm=null; S.editClient=null; remove("clients",cid); toast("Cliente excluído. Os projetos dele foram mantidos."); },
+    editRef(){ S.editRef=id; render.force=true; render(); window.scrollTo(0,0); },
+    cancelRef(){ delete S.draft["r-"+S.editRef]; S.editRef=null; render.force=true; render(); },
+    saveRef(){ const ed=S.editRef; const base=ed!=="new"?clone(S.refs[ed]):{id:uid(),createdAt:Date.now(),kind:"Visual"}; const d=readForm("r-"+ed,base); if(!d.title){toast("Dê um título à referência.");return;} delete S.draft["r-"+ed]; S.editRef=null; put("refs",d); toast("Referência salva."); },
+    deleteRef(){ const rid=S.confirm.slice(5); S.confirm=null; S.editRef=null; remove("refs",rid); },
+    refFilter(){ S.refFilter=b.dataset.val; render(); },
+    closeModal(){ if(b.classList.contains("modal-bg")&&e.target!==b) return; $("#modalHost").innerHTML=""; },
+    copyModal(){ const t=$("#modalText"); copy(t.value); }
+  };
+  if(A[a]){ e.preventDefault(); await A[a](); }
+});
+document.addEventListener("change", e => {
+  const t=e.target; const a=t.dataset&&t.dataset.actChange; const id=t.dataset&&t.dataset.id;
+  if(a==="setStatus"){ const p=clone(P(id)); p.status=t.value; put("projects",p); toast("Status: "+statusLabel(t.value)); }
+  if(a==="toggleDone"){ const p=clone(P(id)); p.done=p.done||{}; p.done[t.dataset.row]=t.checked; put("projects",p); }
+  if(a==="toggleQC"){ const p=clone(P(id)); p.qcManual=p.qcManual||{}; p.qcManual[t.dataset.i]=t.checked; put("projects",p); }
+  if(t.dataset&&t.dataset.upload){ handleFiles(t.dataset.upload, t.files); t.value=""; }
+  if(t.id==="importInput"&&t.files[0]){ importFile(t.files[0]); t.value=""; }
+});
+document.addEventListener("submit", e=>e.preventDefault());
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") $("#modalHost").innerHTML=""; });
+document.addEventListener("dragover", e=>{ const d=e.target.closest&&e.target.closest("[data-drop]"); if(d){ e.preventDefault(); d.classList.add("over"); } });
+document.addEventListener("dragleave", e=>{ const d=e.target.closest&&e.target.closest("[data-drop]"); if(d) d.classList.remove("over"); });
+document.addEventListener("drop", e=>{ const d=e.target.closest&&e.target.closest("[data-drop]"); if(d){ e.preventDefault(); d.classList.remove("over"); handleFiles(d.dataset.drop, e.dataTransfer.files); } });
+
+/* ================= Copiar / salvar arquivos ================= */
+async function copy(text, okMsg="Copiado."){
+  try{ await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch(e){ showText("Copiar texto", text); toast("Selecione o texto e copie com Ctrl+C / Cmd+C."); }
+}
+function showText(title, text){
+  $("#modalHost").innerHTML=`<div class="modal-bg" data-act="closeModal"><div class="modal" role="dialog" aria-label="${esc(title)}"><div class="panel-h"><h2>${esc(title)}</h2><div class="row"><button class="btn sm" data-act="copyModal">${I.copy}Copiar</button><button class="btn sm ghost" data-act="closeModal">Fechar</button></div></div><textarea id="modalText" readonly>${esc(text)}</textarea></div></div>`;
+  const t=$("#modalText"); t.focus(); t.select();
+}
+async function save(filename, data, type){
+  if(S.downloads){ try{ await S.downloads.save({filename, data:new Blob([data],{type:type+";charset=utf-8"})}); toast("Arquivo enviado para download: "+filename); return; }catch(e){ if(e&&e.code==="cancelled"){ return; } } }
+  showText(filename+" (copie e salve manualmente)", data);
+}
+const slug = s => String(s||"projeto").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50)||"projeto";
+
+/* ================= Importar / demo ================= */
+async function importFile(file){
+  try{ const j=JSON.parse(await file.text()); let n=0;
+    COLS.forEach(c=>arr(j[c]).forEach(o=>{ if(o&&typeof o.id==="string"&&o.id){ if(c==="projects") normProject(o); S[c][o.id]=o; if(S.mode==="db") queueWrite(c+"/"+o.id, clone(o)); n++; } }));
+    if(S.mode!=="db") saveLocal(); render(); toast(n?`${n} item(ns) importado(s).`:"O arquivo não tem projetos, clientes ou referências.");
+  }catch(e){ toast("Não foi possível ler o arquivo. Use um backup .json exportado por esta central."); }
+}
+async function loadDemo(){
+  try{ const r=await fetch("demo.json"); const j=await r.json(); COLS.forEach(c=>arr(j[c]).forEach(o=>{ S[c][o.id]=o; if(S.mode==="db") queueWrite(c+"/"+o.id, clone(o)); })); if(S.mode!=="db") saveLocal(); render(); toast("Dados demonstrativos carregados (marcados como DEMO)."); }
+  catch(e){ toast("Não foi possível carregar os dados demonstrativos."); }
+}
+
+/* ================= Análise de arquivos no navegador ================= */
+function once(el, ev, ms=15000){ return new Promise((res,rej)=>{ const t=setTimeout(()=>rej(new Error("timeout "+ev)),ms); el.addEventListener(ev,()=>{clearTimeout(t);res()},{once:true}); el.addEventListener("error",()=>{clearTimeout(t);rej(new Error("error"))},{once:true}); }); }
+function ratio(w,h){ const g=(a,b)=>b?g(b,a%b):a; const r=w/h; const common=[[9,16],[16,9],[4,5],[1,1],[3,4],[4,3],[21,9]]; for(const [a,b] of common) if(Math.abs(r-a/b)<0.02) return a+":"+b; const d=g(w,h); return (w/d)+":"+(h/d); }
+function snapFps(f){ const c=[23.976,24,25,29.97,30,48,50,59.94,60,120]; let best=c[0]; c.forEach(x=>{ if(Math.abs(x-f)<Math.abs(best-f)) best=x; }); return Math.abs(best-f)<1.5?best:Math.round(f); }
+async function estimateFps(v){
+  if(!v.requestVideoFrameCallback) return null;
+  return new Promise(res=>{ const times=[]; let done=false; const fin=()=>{ if(done) return; done=true; v.pause(); if(times.length<6) return res(null); const d=[]; for(let i=1;i<times.length;i++){ const x=times[i]-times[i-1]; if(x>0) d.push(x); } d.sort((a,b)=>a-b); const med=d[Math.floor(d.length/2)]; res(med?snapFps(1/med):null); };
+    const cb=(now,meta)=>{ times.push(meta.mediaTime); if(times.length>=24) fin(); else v.requestVideoFrameCallback(cb); };
+    v.requestVideoFrameCallback(cb); v.play().catch(()=>fin()); setTimeout(fin,2500); });
+}
+async function grabFrames(v, label, fid, n=6){
+  const out=[]; const c=document.createElement("canvas"); const k=Math.min(1,768/Math.max(v.videoWidth,v.videoHeight)); c.width=Math.round(v.videoWidth*k); c.height=Math.round(v.videoHeight*k); const g=c.getContext("2d");
+  for(let i=0;i<n;i++){ const t=v.duration*(i+0.5)/n; v.currentTime=t; try{ await once(v,"seeked",8000); }catch(e){ continue; } g.drawImage(v,0,0,c.width,c.height); const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.72)); if(blob) out.push({blob,url:URL.createObjectURL(blob),label:label+" @ "+fmtSec(t).slice(0,5),fid}); }
+  return out;
+}
+async function analyzeAudio(file){
+  if(file.size>350e6) return {note:"Arquivo acima de 350 MB: a análise de áudio foi pulada para não travar o navegador. Exporte só o áudio (ou um proxy) para medir os silêncios."};
+  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return {note:"Este navegador não analisa áudio."};
+  const ctx=new AC(); try{
+    const ab=await ctx.decodeAudioData(await file.arrayBuffer());
+    const ch=[]; for(let i=0;i<ab.numberOfChannels;i++) ch.push(ab.getChannelData(i));
+    const sr=ab.sampleRate, win=Math.round(sr*0.05), N=ab.length; let peak=0, clipped=0; const db=[];
+    for(let s=0;s<N;s+=win){ let sum=0, cnt=0; const e=Math.min(N,s+win); for(let j=s;j<e;j++){ let x=0; for(const c of ch){ const y=c[j]; x+=y; const ay=Math.abs(y); if(ay>peak) peak=ay; if(ay>=0.999) clipped++; } x/=ch.length; sum+=x*x; cnt++; } db.push(10*Math.log10(sum/Math.max(1,cnt)+1e-12)); }
+    const sorted=[...db].sort((a,b)=>a-b); const p10=sorted[Math.floor(sorted.length*.1)], p70=sorted[Math.floor(sorted.length*.7)];
+    const thr=Math.min(Math.max(p10+6,-60), p70-15);
+    const sil=[]; let st=null; db.forEach((d,i)=>{ const t=i*0.05; if(d<thr){ if(st===null) st=t; } else if(st!==null){ if(t-st>=0.5) sil.push([+st.toFixed(1),+t.toFixed(1)]); st=null; } });
+    if(st!==null&&db.length*0.05-st>=0.5) sil.push([+st.toFixed(1),+(db.length*0.05).toFixed(1)]);
+    const voiced=db.filter(d=>d>=thr); const rms=voiced.length?10*Math.log10(voiced.reduce((a,d)=>a+Math.pow(10,d/10),0)/voiced.length):-99;
+    return {peakDb:+(20*Math.log10(peak+1e-12)).toFixed(1), rmsDb:+rms.toFixed(1), clipped, silences:sil.slice(0,200), duration:+ab.duration.toFixed(2)};
+  }catch(e){ return {note:"O navegador não conseguiu decodificar o áudio deste arquivo (comum em .mov com codecs específicos). Exporte o áudio em .m4a ou .wav para medir."}; }
+  finally{ try{ ctx.close(); }catch(e){} }
+}
+async function handleFiles(pid, files){
+  files=[...(files||[])]; if(!files.length) return;
+  for(const file of files){
+    const kind=file.type.startsWith("video")?"video":file.type.startsWith("audio")?"audio":file.type.startsWith("image")?"image":null;
+    if(!kind){ toast(`“${file.name}” não é vídeo, áudio ou imagem. Para documentos, cole o texto em Transcrição ou Descrição das cenas.`); continue; }
+    const fid=uid(); const rec={id:fid,name:file.name,kind,size:file.size,meta:{}};
+    S.analyzing[pid]=`Lendo ${file.name}…`; render();
+    const url=URL.createObjectURL(file);
+    try{
+      if(kind==="video"){
+        const v=document.createElement("video"); v.muted=true; v.playsInline=true; v.preload="auto"; v.src=url;
+        await once(v,"loadedmetadata");
+        if(!v.videoWidth){ rec.audioNote="O navegador não conseguiu abrir a imagem deste vídeo (codec não suportado, comum em HEVC fora do Safari). Os dados técnicos ficaram incompletos; informe resolução e FPS na descrição das cenas."; }
+        else{
+          rec.meta={width:v.videoWidth,height:v.videoHeight,duration:+v.duration.toFixed(2),orientation:v.videoWidth>v.videoHeight?"Horizontal":v.videoWidth<v.videoHeight?"Vertical":"Quadrado",aspect:ratio(v.videoWidth,v.videoHeight)};
+          S.analyzing[pid]=`Estimando FPS de ${file.name}…`; render();
+          try{ await once(v,"canplay",8000); }catch(e){}
+          const fps=await estimateFps(v); if(fps){ rec.meta.fps=fps; rec.meta.fpsEstimated=true; }
+          S.analyzing[pid]=`Extraindo quadros de ${file.name}…`; render();
+          const fr=await grabFrames(v,file.name,fid); S.frames[pid]=[...(S.frames[pid]||[]),...fr];
+        }
+        S.analyzing[pid]=`Medindo áudio de ${file.name}…`; render();
+        const a=await analyzeAudio(file); if(a.note) rec.audioNote=a.note; else rec.audio=a;
+      } else if(kind==="audio"){
+        S.analyzing[pid]=`Medindo áudio de ${file.name}…`; render();
+        const a=await analyzeAudio(file); if(a.note) rec.audioNote=a.note; else { rec.audio=a; rec.meta.duration=a.duration; }
+      } else {
+        const img=new Image(); img.src=url; await once(img,"load");
+        rec.meta={width:img.naturalWidth,height:img.naturalHeight,orientation:img.naturalWidth>img.naturalHeight?"Horizontal":"Vertical",aspect:ratio(img.naturalWidth,img.naturalHeight)};
+        const c=document.createElement("canvas"); const k=Math.min(1,1024/Math.max(img.naturalWidth,img.naturalHeight)); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.8)); if(blob) S.frames[pid]=[...(S.frames[pid]||[]),{blob,url:URL.createObjectURL(blob),label:file.name,fid}];
+      }
+    }catch(e){ rec.audioNote="Não foi possível ler este arquivo no navegador. Envie uma transcrição ou descrição das cenas."; }
+    finally{ if(kind!=="image") URL.revokeObjectURL(url); }
+    const p=clone(P(pid)); if(!p) break; normProject(p); p.material.files.push(rec); put("projects",p);
+  }
+  delete S.analyzing[pid]; render(); toast("Arquivos analisados.");
+}
+
+/* ================= Geração com Claude ================= */
+function context(p, key){
+  const c=S.clients[p.clientId]; const m=p.material;
+  const refs=Object.values(S.refs).filter(r=>!r.clientId||r.clientId===p.clientId).slice(0,12).map(r=>({titulo:r.title,tipo:r.kind,observar:r.notes}));
+  const files=m.files.map(f=>({arquivo:f.name,tipo:f.kind,tamanho:fmtBytes(f.size||0),dados_medidos:f.meta,audio_medido:f.audio?{pico_dbfs:f.audio.peakDb,nivel_medio_fala_dbfs:f.audio.rmsDb,amostras_clipadas:f.audio.clipped,silencios_segundos:f.audio.silences}:undefined,observacao:f.audioNote}));
+  const prev={}; STEP_ORDER.slice(0,STEP_ORDER.indexOf(key)).forEach(k=>{ if(p.steps[k]&&(STEPS[key].needs.includes(k)||k==="diag"||k==="roteiro")) prev[k]=p.steps[k].data; });
+  const brief={projeto:p.name,segmento:p.segment,objetivo:p.objective,plataforma:p.platform,formato:p.format,duracao_desejada:p.duration,publico:p.audience,tom:p.tone,cta:p.cta,tipo_de_conteudo:p.contentType,referencias_visuais:p.refsText,observacoes:p.notes};
+  return {brief, cliente:c?{nome:c.name,segmento:c.segment,tom:c.tone,publico:c.audience,identidade_visual:c.identity,fazer:c.dos,evitar:c.donts}:null, refs, files, prev, m};
+}
+function buildPrompt(p, key, nImages, transcriptLimit){
+  const st=STEPS[key]; const x=context(p,key);
+  let tr=x.m.transcript||""; let cut=false; if(transcriptLimit&&tr.length>transcriptLimit){ tr=tr.slice(0,transcriptLimit); cut=true; }
+  return `${BASE_RULES}
+
+PLATAFORMA DE DESTINO: ${p.platform} — ${PLATFORM_GUIDE[p.platform]||""}
+
+${st.ask}
+
+=== BRIEFING ===
+${JSON.stringify(x.brief,null,1)}
+
+=== CLIENTE ===
+${x.cliente?JSON.stringify(x.cliente,null,1):"Não informado."}
+
+=== REFERÊNCIAS DA BIBLIOTECA ===
+${x.refs.length?JSON.stringify(x.refs):"Nenhuma."}
+
+=== TRANSCRIÇÃO ===
+${tr||"(não fornecida)"}${cut?"\n[TRANSCRIÇÃO CORTADA POR TAMANHO: avise nas limitações]":""}
+
+=== DESCRIÇÃO DAS CENAS ===
+${x.m.scenes||"(não fornecida)"}
+
+=== OBSERVAÇÕES DA EQUIPE ===
+${x.m.notes||"(nenhuma)"}
+
+=== ARQUIVOS (dados medidos no navegador; FPS é estimado; HDR e perfil de cor não são identificáveis) ===
+${x.files.length?JSON.stringify(x.files):"Nenhum arquivo anexado."}
+${nImages?`\nIMAGENS ANEXADAS: ${nImages} quadro(s) extraído(s) dos vídeos/imagens, na ordem: ${(S.frames[p.id]||[]).slice(0,nImages).map((f,i)=>(i+1)+") "+f.label).join("; ")}.`:"\nNenhuma imagem anexada: não descreva o visual além do que está no texto."}
+
+=== ETAPAS ANTERIORES (já aprovadas pela equipe; mantenha coerência) ===
+${Object.keys(x.prev).length?JSON.stringify(x.prev):"Nenhuma."}
+
+Responda SOMENTE com um objeto JSON válido, sem markdown e sem texto fora do JSON, exatamente neste formato:
+${st.schema}`;
+}
+function parseJSON(t){ let s=String(t||"").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a<0||b<a) throw {code:"invalid_json"}; return JSON.parse(s.slice(a,b+1)); }
+const ERR = {not_granted:"A análise com Claude não foi autorizada nesta visualização. Recarregue a página para ser perguntado de novo.",rate_limited:"Limite de uso atingido por agora. Tente de novo em alguns minutos.",session_expired:"Sua sessão expirou. Entre de novo no Claude.",refused:"O Claude recusou este pedido. Revise o material e tente de novo.",prompt_too_large:"O material é grande demais para uma chamada. Divida a transcrição ou remova trechos.",invalid_json:"A resposta veio fora do formato esperado. Tente gerar novamente.",empty_completion:"O Claude não devolveu conteúdo. Tente de novo.",upstream_error:"Falha de conexão com o Claude. Tente de novo.",sampling_disabled:"A análise com Claude está desativada para esta conta.",image_rejected:"Uma das imagens foi recusada. Remova o arquivo e tente de novo."};
+async function runStep(pid, key){
+  const p=P(pid); if(!p||!S.sample) return false; normProject(p);
+  const m=p.material; const fr=S.frames[pid]||[];
+  if(key==="diag"&&!(m.transcript||m.scenes||fr.length||m.files.length)){ toast("Adicione transcrição, descrição de cenas ou arquivos antes do diagnóstico."); S.tab[pid]="material"; render(); return false; }
+  const missing=STEPS[key].needs.filter(n=>!p.steps[n]); if(missing.length){ toast("Gere antes: "+missing.map(n=>STEPS[n].label).join(", ")); return false; }
+  S.errors=S.errors||{}; delete S.errors[pid+":"+key];
+  const ctl=new AbortController(); const run=S.running[pid+":"+key]={ctl,chars:0}; S.tab[pid]=key; render();
+  try{
+    if(!S.limits){ try{ S.limits=await S.sample.limits(); }catch(e){ S.limits={}; } }
+    const maxImg = key==="diag" && S.limits.images ? Math.min(fr.length, S.limits.images.maxCount||0) : 0;
+    let prompt=buildPrompt(p,key,maxImg);
+    const maxB=S.limits.maxPromptBytes||0; if(maxB && new Blob([prompt]).size>maxB*0.95){ const over=new Blob([prompt]).size-maxB*0.9; prompt=buildPrompt(p,key,maxImg,Math.max(2000,(m.transcript||"").length-over)); toast("A transcrição foi cortada para caber na análise."); }
+    const opts={signal:ctl.signal, modelTier:STEPS[key].tier, onText:({text})=>{ run.chars=text.length; const el=document.querySelector(".running .mono"); if(el) el.textContent=text.length; else if(run.chars&&!run.painted){ run.painted=true; render(); } }};
+    if(maxImg) opts.images=fr.slice(0,maxImg).map(f=>f.blob);
+    const res=await S.sample(prompt, opts);
+    const data=parseJSON(res.text);
+    const np=clone(P(pid)); normProject(np); np.steps[key]={data,at:Date.now(),truncated:!!res.truncated}; np.history.push({step:key,at:Date.now()}); if(np.history.length>60) np.history=np.history.slice(-60);
+    if(np.status==="rascunho") np.status="em_analise"; if(key==="roteiro"&&np.status==="em_analise") np.status="em_edicao";
+    delete S.running[pid+":"+key]; put("projects",np); return true;
+  }catch(e){
+    delete S.running[pid+":"+key];
+    if(e&&e.code==="cancelled"){ toast("Geração interrompida."); }
+    else { S.errors[pid+":"+key]=ERR[e&&e.code]||("Não foi possível gerar ("+((e&&e.code)||(e&&e.message)||"erro")+"). Tente de novo."); }
+    render(); return false;
+  }
+}
+async function runPending(pid){
+  S.stopPipeline=false;
+  for(const k of STEP_ORDER){ const p=P(pid); if(!p) return; if(p.steps[k]) continue; if(S.stopPipeline) break; const ok=await runStep(pid,k); if(!ok) break; }
+}
+
+/* ================= Documento de entrega ================= */
+function buildMD(p){
+  normProject(p); const s=k=>(p.steps[k]||{}).data; const L=[]; const pend="_Pendente: gere esta etapa na central._";
+  const li=a=>arr(a).map(x=>"- "+x).join("\n")||"- —";
+  const rl=a=>arr(a).map(x=>`- **${x.ref||x.trecho||x.de||""}** — ${x.motivo||""}`).join("\n")||"- —";
+  const d=s("diag"), n=s("narr"), r=s("roteiro"), t=s("tecnica"), pu=s("publi"), q=s("qc"), c=s("capcut");
+  L.push(`# ${p.name}`, `**Cliente:** ${clientName(p.clientId)} · **Plataforma:** ${p.platform} · **Formato:** ${p.format} · **Status:** ${statusLabel(p.status)}`, `**Objetivo:** ${p.objective||"—"} · **CTA:** ${p.cta||"—"}`, `_Central de Edição Grandi · ${new Date().toLocaleDateString("pt-BR")}_`, "");
+  L.push("## 1. Diagnóstico do material", d?`${d.resumo}\n\n**Mensagem central:** ${d.mensagem_central}\n\n**Melhores momentos**\n${rl(d.melhores_momentos)}\n\n**Perda de ritmo**\n${rl(d.perda_ritmo)}\n\n**Potencial de retenção (avaliação editorial):** ${(d.potencial_retencao||{}).nota}/10 — ${(d.potencial_retencao||{}).justificativa||""}\n\n**Fatos observados**\n${li(d.fatos)}\n\n**Hipóteses**\n${li(d.hipoteses)}\n\n**Limitações**\n${li(d.limitacoes)}`:pend, "");
+  L.push("## 2. Conceito criativo", n?n.conceito:pend, "");
+  L.push("## 3. Estrutura narrativa recomendada", n?`${n.estrutura_recomendada}\n\n**Ganchos falados**\n${li(n.ganchos_falados)}\n\n**Textos de abertura**\n${li(n.textos_abertura)}\n\n**Estruturas possíveis**\n${arr(n.estruturas).map(e=>`- **${e.nome}:** ${e.sequencia} (${e.quando_usar})`).join("\n")}`:pend, "");
+  L.push("## 4. Roteiro com timeline", r?`Duração final estimada: ${r.duracao_final_estimada} · Timecodes ${r.timecodes_confiaveis?"do arquivo":"estimados"}\n\n| Tempo final | Tempo original | Bloco | Áudio | Ação | Imagem | Texto | Efeito | Som | Objetivo |\n|---|---|---|---|---|---|---|---|---|---|\n${arr(r.linhas).map(x=>"| "+[x.tempo_final,x.tempo_original,BLOCKS[x.bloco]||x.bloco,x.audio,x.acao,x.imagem,x.texto,x.efeito,x.som,x.objetivo].map(v=>String(v??"").replace(/\|/g,"/").replace(/\n/g," ")).join(" | ")+" |").join("\n")}`:pend, "");
+  L.push("## 5. Cortes e trechos removidos", r?rl(r.cortes):pend, "");
+  L.push("## 6. Cenas reordenadas", n?(arr(n.reordenacoes).map(x=>`- ${x.de} → ${x.para}: ${x.motivo}`).join("\n")||"- Ordem original mantida."):pend, "");
+  L.push("## 7. B-roll", r?(arr(r.broll).map(x=>`- **${x.momento}** · ${x.o_que} (${x.fonte}) — ${x.por_que}`).join("\n")||"- —"):pend, "");
+  L.push("## 8. Direção de legendas", r&&r.legendas?`${r.legendas.estilo}\n\n${li(r.legendas.regras)}\n\n**Destaques:** ${arr(r.legendas.destaques).join(", ")}`:pend, "");
+  L.push("## 9. Trilha e efeitos", t?`**Trilha:** ${(t.trilha||{}).estilo} · ${(t.trilha||{}).bpm} BPM · ${(t.trilha||{}).intensidade}\n${arr((t.trilha||{}).entradas).map(x=>`- ${x.momento}: ${x.acao}`).join("\n")}\n\n**Efeitos**\n${arr(t.efeitos).map(x=>`- ${x.momento} · ${x.som} — ${x.motivo}`).join("\n")||"- —"}`:pend, "");
+  L.push("## 10. Correções de imagem e áudio", t?[...arr(t.correcoes_imagem).map(x=>`- [Imagem · ${x.status}] ${x.problema} → ${x.correcao}`),...arr(t.correcoes_audio).map(x=>`- [Áudio · ${x.status}] ${x.problema} → ${x.correcao}`)].join("\n")||"- —":pend, "");
+  L.push("## 11. Exportação recomendada", t&&t.exportacao?`${t.exportacao.resolucao} · ${t.exportacao.fps} fps · ${t.exportacao.codec} · taxa de bits: ${t.exportacao.bitrate} · HDR: ${t.exportacao.hdr}\n\n${t.exportacao.justificativa}`:pend, "");
+  L.push("## 12. Títulos", pu?li(pu.titulos):pend, "");
+  L.push("## 13. Textos de thumbnail", pu?li(pu.thumbs):pend, "");
+  L.push("## 14. Descrição para a plataforma", pu?pu.descricao:pend, "");
+  L.push("## 15. Hashtags", pu?arr(pu.hashtags).join(" "):pend, "");
+  L.push("## 16. Checklist de qualidade", q?`**Avaliação editorial (não é métrica real):** ${Object.entries(SCORE_LABELS).map(([k,l])=>`${l} ${(q.notas||{})[k]??"—"}`).join(" · ")}\n\n${arr(q.checklist).map(x=>`- [${x.ok?"x":" "}] ${x.pergunta} — ${x.comentario}`).join("\n")}\n\n**Ajustes prioritários**\n${li(q.ajustes_prioritarios)}`:pend, "");
+  L.push("**Checklist final da equipe**", QC_MANUAL.map((x,i)=>`- [${p.qcManual[i]?"x":" "}] ${x}`).join("\n"), "");
+  L.push("## GUIA DE EXECUÇÃO NO CAPCUT", c?arr(c.passos).map((x,i)=>`${i+1}. **${x.etapa}** — ${x.instrucao}`).join("\n"):pend);
+  return L.join("\n");
+}
+function buildCSV(p){
+  const r=(p.steps.roteiro||{}).data||{}; const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  return ["tempo_final;tempo_original;bloco;audio;acao;imagem;texto;efeito;som;objetivo;executado", ...arr(r.linhas).map(x=>[x.tempo_final,x.tempo_original,BLOCKS[x.bloco]||x.bloco,x.audio,x.acao,x.imagem,x.texto,x.efeito,x.som,x.objetivo,p.done[x.id]?"sim":"não"].map(q).join(";"))].join("\n");
+}
+
+/* ================= Inicialização ================= */
+render();
+(async function init(){
+  if(!(window.claude && typeof window.claude.use==="function")){ S.mode="local"; loadLocal(); render(); return; }
+  const [db, sample, downloads] = await Promise.all(["db","sample","downloads"].map(n=>window.claude.use(n).catch(()=>null)));
+  S.sample=sample; S.downloads=downloads;
+  if(!db){ S.mode="local"; loadLocal(); render(); return; }
+  S.db=db; S.mode="db"; let first=0;
+  const timer=setTimeout(()=>{ if(first<COLS.length){ toast("O banco da equipe está demorando para responder. Os dados aparecem assim que chegarem."); } },10000);
+  COLS.forEach(c=>{ let got=false; db.collection(c).onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ o[d.id]=Object.assign({id:d.id}, d.data()); }); S[c]=o; if(!got){ got=true; first++; if(first===COLS.length) clearTimeout(timer); } render(); }, err=>{ toast("Erro ao ler "+c+" ("+(err&&err.code||"erro")+")."); }); });
+})();
+</script>

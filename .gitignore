@@ -1,0 +1,7 @@
+video-mariana/raw/
+video-mariana/out/
+video-mariana/frames/
+video-mariana/*.wav
+video-mariana/transcript.json
+video-mariana/fonts/*[wght]*.ttf
+__pycache__/
