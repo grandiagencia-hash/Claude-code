@@ -156,8 +156,9 @@ save("fx_swish_lr", whoosh(0.32, 900, 7000, -0.5, 0.5, 9, 0.12)); save("fx_swish
 save("fx_reveal", whoosh(0.8, 150, 6000, -0.9, 0.9, 12, 0.3)); save("fx_sparkle", sparkle()); save("fx_bell", bell())
 
 seg_start = lambda i: offsets[i]
+END_CARD = False   # card final com CTA (desligado a pedido do cliente)
 CARD, XF = 3.2, 0.5
-FINAL = TOTAL + CARD - XF
+FINAL = TOTAL + CARD - XF if END_CARD else TOTAL
 SFX = [("fx_impact", 0.0, -15), ("fx_swish_lr", 0.0, -22), ("fx_sparkle", out_time(2.3), -24)]
 REVEAL = 8
 for i in range(1, len(SEGMENTS)):
@@ -176,8 +177,8 @@ SFX += [
     ("fx_sparkle", out_time(73.6), -24),                # "fininha"
     ("fx_sparkle", out_time(132.2), -25),               # "mais aparente"
     ("fx_sparkle", out_time(150.3), -21),               # "sem perder a naturalidade"
-    ("fx_whoosh_lr", TOTAL - XF - 0.25, -19),           # entra o card final
-    ("fx_bell", TOTAL - XF + 0.15, -19),
+    *([("fx_whoosh_lr", TOTAL - XF - 0.25, -19),        # entra o card final
+       ("fx_bell", TOTAL - XF + 0.15, -19)] if END_CARD else []),
 ]
 SFX = [s for s in SFX if s[1] is not None]
 
@@ -197,7 +198,7 @@ words = []
 for s in json.load(open("transcript.json")):
     for w in s["words"]:
         txt = w["w"].strip()
-        txt = txt.replace("TIE", "Thay").replace("botolínica", "botulínica")
+        txt = txt.replace("TIE", "Tay").replace("botolínica", "botulínica")
         a, b = out_time(w["s"] + 0.02), out_time(w["e"] - 0.02)
         if a is None or b is None:
             continue
@@ -270,7 +271,7 @@ GFX = [  # arquivo, x, y, início, fim
 ]
 for g in GFX:
     inputs += ["-loop", "1", "-framerate", "30", "-t", f"{TOTAL:.3f}", "-i", f"{OUT}/gfx/{g[0]}"]
-inputs += ["-loop", "1", "-framerate", "30", "-t", f"{CARD:.3f}", "-i", f"{OUT}/gfx/end.png"]
+if END_CARD: inputs += ["-loop", "1", "-framerate", "30", "-t", f"{CARD:.3f}", "-i", f"{OUT}/gfx/end.png"]
 fc.append(f"[0:v]ass={OUT}/legendas.ass:fontsdir=fonts,format=yuva420p[v0]")
 prev = "v0"
 for k, (name, x, y, a, b2) in enumerate(GFX):
@@ -279,8 +280,11 @@ for k, (name, x, y, a, b2) in enumerate(GFX):
     fc.append(f"[{prev}][g{k}]overlay={x}:{y}:enable='between(t,{a:.3f},{b2:.3f})'[v{k+1}]")
     prev = f"v{k+1}"
 fc.append(f"[{prev}]format=yuv420p,fps=30,settb=AVTB[main]")
-fc.append(f"[{nA + len(GFX)}:v]format=yuv420p,fps=30,settb=AVTB[card]")
-fc.append(f"[main][card]xfade=transition=fade:duration={XF}:offset={TOTAL - XF:.3f}[v]")
+if END_CARD:
+    fc.append(f"[{nA + len(GFX)}:v]format=yuv420p,fps=30,settb=AVTB[card]")
+    fc.append(f"[main][card]xfade=transition=fade:duration={XF}:offset={TOTAL - XF:.3f}[v]")
+else:
+    fc.append("[main]null[v]")
 # áudio: estender para o card final + pop quando o card entra
 run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(fc), "-map", "[v]", "-map", "[a]",
      "-c:v", "libx264", "-crf", "18", "-preset", "slow", "-profile:v", "high", "-pix_fmt", "yuv420p",
